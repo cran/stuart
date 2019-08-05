@@ -1,8 +1,21 @@
 fitness <-
-function(objective = NULL, solution.fit
+function(objective = NULL, solution.fit, software
 ) { #begin function
 
   criteria <- names(formals(objective))
+  
+  # translate basic fit components, if necessary
+  if (software == 'Mplus') {
+    name <- c('rmsea','srmr','wrmr','cfi','tli','chisq','df','pvalue','aic','bic','abic')
+    locator <- c('RMSEA_Estimate', 'SRMR', 'WRMR', 'CFI', 'TLI', 'ChiSqM_Value', 'ChiSqM_DF', 'ChiSqM_PValue', 'AIC', 'BIC', 'aBIC')
+    
+    locator <- locator[which(name%in%criteria)]
+    name <- name[which(name%in%criteria)]
+    
+    for (i in seq_along(locator)) {
+      names(solution.fit)[which(names(solution.fit)==locator[i])] <- name[i]
+    }
+  }
 
   output <- list()
   

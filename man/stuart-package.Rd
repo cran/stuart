@@ -20,6 +20,6 @@ The package also provides two datasets: the \code{\link{sups}} dataset and the \
 }
 
 \author{
-\strong{Maintainer}: Martin Schultze \email{martin.schultze@fu-berlin.de}
+\strong{Maintainer}: Martin Schultze \email{schultze@psych.uni-frankfurt.de}
 
 }

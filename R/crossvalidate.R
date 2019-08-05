@@ -11,15 +11,13 @@
 #' @param selection An object of class \code{stuartOutput}.
 #' @param old.data A \code{data.frame} of the calibration sample.
 #' @param new.data A \code{data.frame} of the validation sample.
-#' @param invariance The invariance between the calibration and the validation sample. Can be one of 'configural', 'weak', 'strong', 'strict', or 'full', with the first being the default. Currently 'full' is only functional when using Mplus.
-#' @param objective A function that converts the results of model estimation into a pheromone. If none is provided the default function \code{fitness} is used. This can be examined with \code{body(stuart:::fitness)}.
 #' @param filename The stem of the filenames used to save inputs, outputs, and data files when \code{software='Mplus'}. This may include the file path. When \code{NULL} (the default) files will be saved to the temporary directory, which is deleted when the R session is ended.
 #' 
 ### Outputs ----
-#' @return Returns a list containing the \code{data.frame} \code{comparison} and an object containing the model results of the validation sample. 
+#' @return Returns a list containing the \code{data.frame} \code{comparison} and an object containing the model results of the four different invariance assumptions. 
 #' 
-#' \item{comparison}{A \code{data.frame} with 2 observations. The first observation shows the components of the objective function for the final model in the calibration sample. The second observation those of the model for the validation sample. Which variables are returned depends on the setting of \code{objective}.}
-#' \item{validation}{When using \code{lavaan} for estimation, an object of class \code{lavaan} containing the model results fit to the validation sample. When using Mplus for estimation, a character vector containing the Mplus output for the validation sample.}
+#' \item{comparison}{A \code{data.frame} with 4 observations, each observation representing a level of measurement invariance. The number of columns depends on the arguments of the \code{objective} used in the original selection. In addition to those columns, three additional columns with the (corrected) Likelihood-Ratio-Tests are reported.}
+#' \item{models}{A list of the four model results either of class \code{lavaan} or \code{mplus.model}, depending on the \code{software}-setting of the original selection.}
 #' 
 #' @concept ACO subtests
 #' 
@@ -37,8 +35,7 @@
 #'   cores = 1)  # number of cores set to 1
 #' 
 #' # Validation
-#' crossvalidate(sel, half1, half2, 
-#'   invariance = 'strong')  # assuming equality of loadings and intercepts
+#' crossvalidate(sel, half1, half2)
 #' 
 #' # Using the 'holdout' function for data split
 #' data(fairplayer)
@@ -50,8 +47,7 @@
 #'   cores = 1)  # number of cores set to 1
 #' 
 #' # Validation
-#' crossvalidate(sel, split,
-#'   invariance = 'weak')  # assuming equality of loadings
+#' crossvalidate(sel, split)
 #' 
 #' @export
 
@@ -59,13 +55,8 @@
 crossvalidate <- 
 function(
   selection, old.data, new.data,
-  invariance = 'configural',
-  objective = NULL,
   filename = NULL
 ) { #begin function
-  
-  if (!invariance%in%c('configural','weak','strong','strict','full'))
-    stop('invariance must be configural, weak, strong, strict, or full.')
   
   # check estimation software
   software <- selection$software
@@ -83,29 +74,13 @@ function(
     args$old.data <- old.data$calibrate
   }
 
-  # check fitness function
-  if (is.null(objective)) objective <- selection$parameters$objective 
-  args$objective <- objective
-
   # add analysis options
   args$analysis.options <- selection$analysis.options
   
   # run validation
-  validated <- do.call(paste('crossvalidate',software,sep='.'),args)    
-  fitness.options <- as.list(formals(fitness))
-  fitness.options$solution.fit <- validated
-  fitness.options$objective <- objective
-  if ('con'%in%names(selection$log)) fitness.options$criteria <- c(as.character(fitness.options$criteria)[-1],'con')
+  output <- do.call(paste('crossvalidate',software,sep='.'),args)
   
-  output <- list()
-  output$comparison <- do.call(fitness,fitness.options)
-  output$comparison <- rbind(selection$log[which.max(selection$log$pheromone),names(selection$log)%in%names(output$comparison)],array(data=unlist(output$comparison)))
-  rownames(output$comparison) <- c('calibration','validation')
-  
-  args$output.model <- TRUE
-  output$validation <- do.call(paste('crossvalidate',software,sep='.'),args)
-  
-  class(output) <- 'stuartCrossvalidate'
+  class(output) <- c('stuartCrossvalidate')
   return(output)
   
 } #end function

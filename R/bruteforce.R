@@ -148,7 +148,7 @@ function(
   final.model <- do.call(paste('run',software,sep='.'),args)
 
   #generating output
-  output <- list(call=match.call()[1])  
+  output <- list(call=match.call())  
   output$software <- software
   output$parameters <- c(solution$parameters)
   output$analysis.options <- analysis.options

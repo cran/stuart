@@ -50,6 +50,16 @@ function(
   svalues <- FALSE
   bf.args <- mget(names(formals(bf.cycle))[-1])
   
+  if (software=='Mplus') {
+    #file location
+    if (is.null(filename)) filename <- paste0(tempdir(), '/stuart')
+    
+    #writing the data file
+    utils::write.table(data,paste(filename,'_data.dat',sep=''),
+      col.names=FALSE,row.names=FALSE,na='-9999',
+      sep='\t',dec='.')
+  }
+  
   if (nrow(filter) > 0) {
     
     #parallel processing for R-internal estimations

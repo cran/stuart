@@ -59,6 +59,7 @@ function(
   #sanity check
   objective <- NULL
   localization <- 'nodes'
+  software <- 'lavaan'
   do.call('sanitycheck',mget(names(formals(sanitycheck))))
   
   #data preparation

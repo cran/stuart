@@ -15,7 +15,7 @@ function(
   tmp <- c(unlist(factor.structure),grouping) #all names provided
 
   if (any(!is.element(tmp,names(data)))) {
-    stop('The variable names you provided do not match the variable names in your dataset.\n',call.=FALSE)
+    stop(paste0('The variable names you provided do not match the variable names in your dataset. Missing variables are: ', paste(tmp[which(!tmp%in%names(data))], sep = ', ') ,'.\n'),call.=FALSE)
   }
 
   #create phantom longitudinal data, if only cross-sectional

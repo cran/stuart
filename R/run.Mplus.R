@@ -17,17 +17,19 @@ function(
   
   #prepare data for model fit
   model.data <- data[,unlist(selected.items)]
-  if (!is.null(grouping)) model.data$group <- data[,grouping]
+  if (!is.null(grouping)) {
+    model.data$group <- data[,grouping]
+    if (!is.numeric(data[, grouping])) {
+      stop('Mplus requires numerical variables. Your grouping variable is not numeric.', call. = FALSE)
+    }
+  }
   model.data <- data.frame(model.data,auxi)
-  model.data <- data.frame(lapply(model.data, as.numeric))
+
+  #check for ordinal items
+  ordinal <- any(sapply(data[, unlist(factor.structure)], function(x) class(x)[1]) == 'ordered')
   
   #file location
   if (is.null(filename)) filename <- paste0(tempdir(), '/stuart')
-  
-  #writing the data file
-  utils::write.table(model.data,paste(filename,'_data.dat',sep=''),
-    col.names=FALSE,row.names=FALSE,na='-9999',
-    sep='\t',dec='.')
   
   # Check for inappropriate analysis options
   if (!is.null(analysis.options)) {
@@ -51,7 +53,7 @@ function(
   #write Mplus "Variable" section
   input <- paste0(input,'Variable: \n\tnames=')
   
-  input <- paste0(input,paste(names(model.data),collapse=c('\n\t\t')),';\n')
+  input <- paste0(input,paste(names(data),collapse=c('\n\t\t')),';\n')
   
   input <- paste0(input,'\tmissing=ALL(-9999);\n',
     '\tusevariables=')
@@ -64,7 +66,7 @@ function(
   }
   
   if (!is.null(grouping)) {
-    input <- paste(input,paste0('grouping = group (',paste(stats::na.omit(unique(model.data$group)),stats::na.omit(unique(model.data$group)),sep='=',collapse=' '),')'),';\n')
+    input <- paste(input,paste0('grouping = ', grouping, ' (',paste(stats::na.omit(unique(model.data$group)),stats::na.omit(unique(model.data$group)),sep='=',collapse=' '),')'),';\n')
   }
   
   input <- paste0(input,unlist(analysis.options[grepl('^vari*',names(analysis.options),ignore.case=TRUE)][1]),'\n')
@@ -72,10 +74,6 @@ function(
   
   #write Mplus "Analysis" section
   input <- paste0(input,'Analysis: \n\tprocessors=',cores,';\n')
-  
-  if (any(sapply(data[, unlist(selected.items)], is.factor))) {
-    input <- paste0(input,'\n\tparameterization=theta;\n')
-  }
   
   input <- paste0(input, analysis.options$analysis,'\n')
   
@@ -95,29 +93,36 @@ function(
         tmp.sel <- selected[[tmp.fil]]
         tmp.sit <- selected.items[[i]]
         
+        locate <- which(unlist(lapply(short,
+          function(x) is.element(names(factor.structure)[i],x))))
+        nthresh <- sapply(data[, factor.structure[[i]]], function(x) max(nlevels(x), 2))-1
+        cthresh <- c(0, cumsum(nthresh))+1
+
         #write the labels (no grouping)
         tmp.inv <- lapply(long.equal[[i]],function(x) return(x[tmp.sel]))
-        
+        if (ordinal) {
+          tmp.inv$alp <- array(dim=0)
+          for (l in tmp.sel) { #across selected items
+            tmp.inv$alp <- c(tmp.inv$alp, long.equal[[i]]$alp[cthresh[l]:(cthresh[l+1]-1)])
+          }
+        }
+
         #factor loadings
         input <- paste(input,'\n',
                        names(selected.items[i]),'by',
                        paste0(tmp.sit,' (',tmp.inv$lam,')',collapse='\n\t\t'),';\n')
         
         #residual variances & intercepts
+        tmp.thr <- c(0, cumsum(nthresh[tmp.sit]))
         for (j in seq_along(tmp.sit)) {
-          # for categorical
-          if (is.factor(data[, tmp.sit[j]])) {
+          if (is.factor(data[, tmp.sit[j]])) { #categorical
             input <- paste(input, 
-              paste0(tmp.sit[j],'@1 (',tmp.inv$eps[j],');',collapse='\n'),sep='\n')
+              paste0('[', tmp.sit[j], '$', 1:nthresh[tmp.sit[j]], '] (', tmp.inv$alp[(tmp.thr[j] + 1):tmp.thr[j+1]], ');', sep = '', collapse = '\n'), sep = '\n')
+          } else {
             input <- paste(input, 
-              paste0('[',tmp.sit[j],'$1] (',tmp.inv$alp[j],');', collapse = '\n'),sep='\n')
-          } 
-          # for continuous
-          else {
+              paste0('[', tmp.sit[j], '] (', tmp.inv$alp[(tmp.thr[j] + 1):tmp.thr[j+1]], ');', sep = '', collapse = '\n'), sep = '\n')
             input <- paste(input,
               paste0(tmp.sit[j],' (',tmp.inv$eps[j],');',collapse='\n'),sep='\n')
-            input <- paste(input,
-              paste0('[',tmp.sit[j],'] (',tmp.inv$alp[j],');', collapse = '\n'),sep='\n')
           }
         }
         
@@ -174,8 +179,6 @@ function(
           # for categorical
           if (is.factor(data[, tmp.sit[j]])) {
             input <- paste(input, 
-              paste0(tmp.sit[j],'@1;',collapse='\n'),sep='\n')
-            input <- paste(input, 
               paste0('[',tmp.sit[j],'$1];', collapse = '\n'),sep='\n')
           } 
           # for continuous
@@ -207,21 +210,36 @@ function(
 
       #group specific models
       for (k in 1:length(long.equal)) { #over groups
-
+        
         #write grouping header
         input <- paste(input,'\n',
                        'Model',stats::na.omit(unique(model.data$group))[k],':\n')
         
         #write the (item) factor structure
         for (i in 1:length(selected.items)) { #over factors
+          
           #shorten the writing by creating tmp-data
           tmp.fil <- which(unlist(lapply(short,
             function(x) is.element(names(factor.structure)[i],x))))
           tmp.sel <- selected[[tmp.fil]]
           tmp.sit <- selected.items[[i]]
-
-          tmp.inv <- lapply(long.equal[[k]][[i]],function(x) return(x[tmp.sel]))
           
+          locate <- which(unlist(lapply(short,
+            function(x) is.element(names(factor.structure)[i],x))))
+          nthresh <- sapply(data[, factor.structure[[i]]], function(x) max(nlevels(x), 2))-1
+          cthresh <- c(0, cumsum(nthresh))+1
+          
+          tmp.thr <- c(0, cumsum(nthresh[tmp.sit]))
+
+          tmp.inv <- list(NA)
+          tmp.inv <- lapply(long.equal[[k]][[i]],function(x) return(x[tmp.sel]))
+          if (ordinal) {
+            tmp.inv$alp <- character()
+            for (j in seq_along(tmp.sel)) {
+              tmp.inv$alp <- c(tmp.inv$alp, long.equal[[k]][[i]]$alp[cthresh[tmp.sel[j]]:(cthresh[tmp.sel[j]]+(nthresh[tmp.sel[j]]-1))])
+            }
+          }
+
           #factor loadings
           tmp.lam <- paste(names(selected.items[i]),'by',
                            paste0(tmp.sit[1],'@1\n\t\t'))
@@ -231,19 +249,14 @@ function(
           
           #residual variances & intercepts
           for (j in seq_along(tmp.sit)) {
-            # for categorical
-            if (is.factor(data[, tmp.sit[j]])) {
+            if (is.factor(data[, tmp.sit[j]])) { #categorical
               input <- paste(input, 
-                paste0(tmp.sit[j],'@1 (',tmp.inv$eps[j],');',collapse='\n'),sep='\n')
+                paste0('[', tmp.sit[j], '$', 1:nthresh[tmp.sit[j]], '] (', tmp.inv$alp[(tmp.thr[j] + 1):tmp.thr[j+1]], ');', sep = '', collapse = '\n'), sep = '\n')
+            } else {
               input <- paste(input, 
-                paste0('[',tmp.sit[j],'$1] (',tmp.inv$alp[j],');', collapse = '\n'),sep='\n')
-            } 
-            # for continuous
-            else {
+                paste0('[', tmp.sit[j], '] (', tmp.inv$alp[(tmp.thr[j] + 1):tmp.thr[j+1]], ');', sep = '', collapse = '\n'), sep = '\n')
               input <- paste(input,
                 paste0(tmp.sit[j],' (',tmp.inv$eps[j],');',collapse='\n'),sep='\n')
-              input <- paste(input,
-                paste0('[',tmp.sit[j],'] (',tmp.inv$alp[j],');', collapse = '\n'),sep='\n')
             }
           }
         }
@@ -315,9 +328,9 @@ function(
   if (output.model) return(MplusOut)
   
   exclusion <- FALSE
-  if (length(MplusOut$errors) > 0) exclusion <- TRUE
+  if (length(MplusOut$errors) > 0) return(output=list(NA))
   if (!ignore.errors) {
-    exclusion <- any(sapply(MplusOut$warnings, function(x) any(grepl('NOT POSITIVE|NO CONVERGENCE|CHECK YOUR MODEL', x))))
+    exclusion <- any(sapply(MplusOut$warnings, function(x) any(grepl('POSITIVE DEFINITE|NO CONVERGENCE|CHECK YOUR MODEL', x))))
   }
 
   #return list of NA if errors occurred
@@ -326,13 +339,7 @@ function(
   } else {
 
     #extract the fit statistics reported by Mplus
-    output <- list()
-    
-    name <- c('rmsea','srmr','cfi','tli','chisq','df','pvalue','aic','bic','abic')
-    locator <- c('RMSEA_Estimate', 'SRMR', 'CFI', 'TLI', 'ChiSqM_Value', 'ChiSqM_DF', 'ChiSqM_PValue', 'AIC', 'BIC', 'aBIC')
-    for (i in seq_along(name)) {
-      output[name[i]] <- ifelse(locator[i] %in% names(MplusOut$summaries), MplusOut$summaries[, locator[i]], NA)
-    }
+    output <- as.list(MplusOut$summaries)
     
     #extract latent correlations
     if (is.null(grouping)) {
@@ -375,12 +382,31 @@ function(
     })
     
     # Extract alpha
-    tmp <- esti[grepl('Intercepts|Thresholds', esti$paramHeader) & esti$param %in% toupper(unlist(selected.items)), ]
+    tmp <- esti[(grepl('Intercepts', esti$paramHeader) & esti$param %in% toupper(unlist(selected.items))) | grepl('Thresholds', esti$paramHeader), ]
     alpha <- tapply(tmp$est, tmp$Group, identity, simplify = FALSE)
 
     # Extract theta
-    tmp <- esti[grepl('Residual.Variances', esti$paramHeader) & esti$param %in% toupper(unlist(selected.items)), ]
-    theta <- tapply(tmp$est, tmp$Group, function(x) diag(x), simplify = FALSE)
+    var_types <- sapply(model.data, function(x) class(x)[1])
+    var_types <- var_types[names(var_types)!='group']
+    
+    if (all(var_types%in%c('numeric','integer'))) {
+      tmp <- esti[grepl('Residual.Variances', esti$paramHeader) & esti$param %in% toupper(unlist(selected.items)), ]
+      theta <- tapply(tmp$est, tmp$Group, function(x) diag(x), simplify = FALSE)
+    } else {
+      tmp <- MplusOut$parameters$r2
+      if (is.null(grouping)) {
+        tmp$Group <- 1
+      }
+      theta <- tapply(tmp$resid_var, tmp$Group, function(x) diag(x), simplify = FALSE)
+      
+      if (any(var_types%in%c('numeric','integer'))) {
+        for (i in seq_along(theta)) {
+          tmp <- esti[grepl('Residual.Variances', esti$paramHeader) & esti$param %in% toupper(unlist(selected.items)), ]
+          tmp <- tmp[tmp$Group == unique(tmp$Group)[i], 'est']
+          theta[[i]][is.na(theta[[i]])] <- tmp
+        } 
+      }
+    }
     
     dimnames(alpha) <- dimnames(theta) <- names(lambda) <- NULL
 
@@ -394,7 +420,6 @@ function(
       }
       # workaround for absence of short.factor.structure when crossvalidating
       if (class(try(short.factor.structure,silent=TRUE))=='try-error') {
-        warning('Estimates of crel are inflated when crossvalidating longitudinal or MTMM settings.',call.=FALSE)
         short.factor.structure <- as.list(rep(NA,ncol(lambda[[i]])))
         names(short.factor.structure) <- colnames(lambda[[i]])
       }
@@ -420,6 +445,7 @@ function(
     }
     
     tmp <- MplusOut$parameters$r2
+    if (is.null(grouping)) tmp$Group <- 1
     tmp <- tmp[tmp$param %in% toupper(names(selected.items)), ]
     con <- mean(tapply(tmp$est, tmp$Group, mean))
 

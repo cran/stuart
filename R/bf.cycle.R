@@ -31,8 +31,7 @@ function(run,
 
   #compute pheromone
   fitness.options <- as.list(formals(fitness))
-  fitness.options$solution.fit <- solution.fit
-  fitness.options$objective <- objective
+  fitness.options <- mget(names(fitness.options))
   if (any(sapply(mtmm,length))>1) fitness.options$criteria <- c(as.character(fitness.options$criteria)[-1],'con')
   solution.phe <- do.call(fitness,fitness.options)
   if (!is.null(objective)) {

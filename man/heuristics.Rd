@@ -63,6 +63,4 @@ heu
 \author{
 Martin Schultze
 }
-\concept{
-ACO subtests
-}
+\concept{ACO subtests}

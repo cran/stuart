@@ -89,6 +89,11 @@ function(
     }
   }
 
+  # stop with too few possible combinations
+  p_random <-  1/compute.combinations(short.factor.structure, capacity, use.order)
+  if (pbest_cur < p_random) {
+    stop(paste0('The target probability of constructing the final solution is less than random chance. Use bruteforce or increase pbest to at least ', round(p_random, 5), '.'), call.=FALSE)
+  }
   
   #set random seed, if provided
   if (!is.null(seed)) {
@@ -109,6 +114,16 @@ function(
   message('Running STUART with MMAS.\n')
   progress <- utils::txtProgressBar(0,max(c(colonies,1)),style=3)
   count.gb <- 0
+  
+  if (software=='Mplus') {
+    #file location
+    if (is.null(filename)) filename <- paste0(tempdir(), '/stuart')
+    
+    #writing the data file
+    utils::write.table(data,paste(filename,'_data.dat',sep=''),
+      col.names=FALSE,row.names=FALSE,na='-9999',
+      sep='\t',dec='.')
+  }
 
   repeat { #over colonies
 

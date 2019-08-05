@@ -6,12 +6,12 @@
 \usage{
 bruteforce(data, factor.structure, capacity = NULL,
   item.invariance = "congeneric", repeated.measures = NULL,
-  long.invariance = "strict", mtmm = NULL, mtmm.invariance = "configural",
-  grouping = NULL, group.invariance = "strict", auxiliary = NULL,
-  use.order = FALSE, software = "lavaan", cores = NULL,
-  objective = objective.preset, ignore.errors = FALSE,
-  analysis.options = NULL, suppress.model = FALSE,
-  request.override = 10000, filename = NULL)
+  long.invariance = "strict", mtmm = NULL,
+  mtmm.invariance = "configural", grouping = NULL,
+  group.invariance = "strict", auxiliary = NULL, use.order = FALSE,
+  software = "lavaan", cores = NULL, objective = objective.preset,
+  ignore.errors = FALSE, analysis.options = NULL,
+  suppress.model = FALSE, request.override = 10000, filename = NULL)
 }
 \arguments{
 \item{data}{A data.frame containing all relevant data.}
@@ -88,6 +88,4 @@ summary(sel)  # Fit is perfect because of just-identified model
 \author{
 Martin Schultze
 }
-\concept{
-ACO subtests
-}
+\concept{ACO subtests}

@@ -35,6 +35,4 @@ lapply(split, nrow) # check size of samples
 \author{
 Martin Schultze
 }
-\concept{
-ACO subtests
-}
+\concept{ACO subtests}

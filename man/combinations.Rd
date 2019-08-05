@@ -50,6 +50,4 @@ combinations(fairplayer, fs, 4, repeated.measures = repe)
 \author{
 Martin Schultze
 }
-\concept{
-ACO subtests
-}
+\concept{ACO subtests}

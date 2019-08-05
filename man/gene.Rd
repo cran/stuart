@@ -6,15 +6,15 @@
 \usage{
 gene(data, factor.structure, capacity = NULL, item.weights = NULL,
   item.invariance = "congeneric", repeated.measures = NULL,
-  long.invariance = "strict", mtmm = NULL, mtmm.invariance = "configural",
-  grouping = NULL, group.invariance = "strict", auxiliary = NULL,
-  use.order = FALSE, software = "lavaan", cores = NULL,
-  objective = objective.preset, ignore.errors = FALSE, generations = 128,
-  individuals = 64, elitism = 1/individuals, reproduction = 0.5,
-  mutation = 0.1, mating.index = 1, mating.size = 0.25,
-  mating.criterion = "fitness", tolerance = 1e-04,
-  analysis.options = NULL, suppress.model = FALSE, seed = NULL,
-  filename = NULL)
+  long.invariance = "strict", mtmm = NULL,
+  mtmm.invariance = "configural", grouping = NULL,
+  group.invariance = "strict", auxiliary = NULL, use.order = FALSE,
+  software = "lavaan", cores = NULL, objective = objective.preset,
+  ignore.errors = FALSE, generations = 128, individuals = 64,
+  elitism = 1/individuals, reproduction = 0.5, mutation = 0.1,
+  mating.index = 1, mating.size = 0.25, mating.criterion = "fitness",
+  tolerance = 1e-04, analysis.options = NULL, suppress.model = FALSE,
+  seed = NULL, filename = NULL)
 }
 \arguments{
 \item{data}{A data.frame containing all relevant data.}
@@ -148,6 +148,4 @@ Galán, S.F., Mengshoel, O.J., & Pinter,  R. (2013). A novel mating approach for
 \author{
 Martin Schultze
 }
-\concept{
-ACO subtests
-}
+\concept{ACO subtests}

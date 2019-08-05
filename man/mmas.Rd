@@ -6,15 +6,16 @@
 \usage{
 mmas(data, factor.structure, capacity = NULL, item.weights = NULL,
   item.invariance = "congeneric", repeated.measures = NULL,
-  long.invariance = "strict", mtmm = NULL, mtmm.invariance = "configural",
-  grouping = NULL, group.invariance = "strict", auxiliary = NULL,
-  use.order = FALSE, software = "lavaan", cores = NULL,
-  objective = objective.preset, ignore.errors = FALSE, ants = 16,
-  colonies = 256, evaporation = 0.95, alpha = 1, beta = 1,
-  pheromones = NULL, heuristics = NULL, deposit = "ib",
-  localization = "nodes", pbest = 0.005, tolerance = 0.5,
-  schedule = "run", analysis.options = NULL, suppress.model = FALSE,
-  seed = NULL, filename = NULL)
+  long.invariance = "strict", mtmm = NULL,
+  mtmm.invariance = "configural", grouping = NULL,
+  group.invariance = "strict", auxiliary = NULL, use.order = FALSE,
+  software = "lavaan", cores = NULL, objective = objective.preset,
+  ignore.errors = FALSE, ants = 16, colonies = 256,
+  evaporation = 0.95, alpha = 1, beta = 1, pheromones = NULL,
+  heuristics = NULL, deposit = "ib", localization = "nodes",
+  pbest = 0.005, tolerance = 0.5, schedule = "run",
+  analysis.options = NULL, suppress.model = FALSE, seed = NULL,
+  filename = NULL)
 }
 \arguments{
 \item{data}{A data.frame containing all relevant data.}
@@ -100,7 +101,7 @@ Returns an object of the class \code{stuartOutput} for which specific \code{summ
 Construct subtests from a given pool of items using the classical Max-Min Ant-System (Stützle, 1998). Allows for multiple constructs, occasions, and groups.
 }
 \details{
-The pheromone function provided via \code{objective} is used to assess the quality of the solutions. These functions can contain any combination of the fit indices provided by the estimation software. When using Mplus these fit indices are 'rmsea', 'srmr', 'cfi', 'tli', 'chisq' (with 'df' and 'pvalue'), 'aic', 'bic', and 'abic'. With lavaan any fit index provided by \code{\link[lavaan]{inspect}} can be used. Additionally 'crel' provides an aggregate of composite reliabilites, 'rel' provides a vector or a list of reliability coefficients for the latent variables, 'con' provides an aggregate consistency estimate for MTMM analyses, and 'lvcor' provides a list of the latent variable correlation matrices. For more detailed objective functions 'lambda', 'theta', 'psi', and 'alpha' provide the model-implied matrices. Per default a pheromone function using 'crel', 'rmsea', and 'srmr' is used. Please be aware that the \code{objective} must be a function with the required fit indices as (correctly named) arguments.
+The pheromone function provided via \code{objective} is used to assess the quality of the solutions. These functions can contain any combination of the fit indices provided by the estimation software. When using Mplus these fit indices are 'rmsea', 'srmr', 'cfi', 'tli', 'chisq' (with 'df' and 'pvalue'), 'aic', 'bic', and 'abic'. With lavaan any fit index provided by \code{\link[lavaan]{inspect}} can be used. Additionally 'crel' provides an aggregate of composite reliabilites, 'rel' provides a vector or a list of reliability coefficients for the latent variables, 'con' provides an aggregate consistency estimate for MTMM analyses, and 'lvcor' provides a list of the latent variable correlation matrices. For more detailed objective functions 'lambda', 'theta', 'psi', 'alpha', and 'nu' provide the model-implied matrices. Per default a pheromone function using 'crel', 'rmsea', and 'srmr' is used. Please be aware that the \code{objective} must be a function with the required fit indices as (correctly named) arguments.
 
 The scheduling of parameters is possible for the arguments \code{ants}, \code{colonies}, \code{evaporation}, \code{pbest}, \code{alpha}, \code{beta}, \code{tolerance}, and \code{deposit}. For all of these parameter scheduling is done when an array with two columns is provided. The first column of the array contains the timer, i.e. when to switch between parameter settings, the second column contains the values. The argument \code{schedule} can be used to select an absolute schedule (\code{schedule='run'}), a relative schedule which resets completely after a new global best is found (\code{schedule='colony'}), or a mixed version which resets the current phase of the schedule after a new global best is found (\code{schedule='mixed'}). When providing a parameter schedule for iterations 0, 3, and 10 using 'run' will result in a change after the third and the tenth iteration - irrespective of whether global best solutions were found. In contrast, using 'colony' will result in the first setting being used again once a new global best is found. This setting will then be used until iteration 3 (if no new best solution is found) before a switch occurs. If a new global best is found the setting will begin the sequence from the beginning. Using 'mixed' will result in the first setting being used until three consecutive iterations cannot produce a new global best. After this the second setting is used. If a new global best is found, the second setting is kept, but for the purpose of the schedule it is now iteration 3 again, meaning that the third setting will be used later than in a 'run' schedule.
 }
@@ -171,6 +172,4 @@ Stützle, T. (1998). Local search algorithms for combinatorial problems: Analysi
 \author{
 Martin Schultze
 }
-\concept{
-ACO subtests
-}
+\concept{ACO subtests}
