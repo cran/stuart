@@ -1,6 +1,7 @@
 stuart.randomsamples <-
 function(
-  short.factor.structure, short, long.equal,    #made on toplevel
+  short.factor.structure, short, long.equal, comparisons.equal,
+  comparisons.invariance, #made on toplevel
   capacity,
   data, factor.structure, auxi, use.order,                      #simple prerequisites
   
@@ -9,7 +10,7 @@ function(
   mtmm, mtmm.invariance,                                         #mtmm relations
   grouping, group.invariance,                                    #grouping relations
   software, cores,                                               #Software to be used
-  
+  comparisons,
   objective=NULL, ignore.errors=FALSE,                        #fitness function
   
   suppress.model=FALSE, analysis.options=NULL,                   #Additional modeling

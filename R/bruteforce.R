@@ -3,6 +3,11 @@
 #' 
 #' Construct subtests from a given pool of items using a brute-force approach (i.e. by estimating all possible combinations).
 #' 
+### Details ----
+#' The pheromone function provided via \code{objective} is used to assess the quality of the solutions. These functions can contain any combination of the fit indices provided by the estimation software. When using Mplus these fit indices are 'rmsea', 'srmr', 'cfi', 'tli', 'chisq' (with 'df' and 'pvalue'), 'aic', 'bic', and 'abic'. With lavaan any fit index provided by \code{\link[lavaan]{inspect}} can be used. Additionally 'crel' provides an aggregate of composite reliabilites, 'rel' provides a vector or a list of reliability coefficients for the latent variables, 'con' provides an aggregate consistency estimate for MTMM analyses, and 'lvcor' provides a list of the latent variable correlation matrices. For more detailed objective functions 'lambda', 'theta', 'psi', 'alpha', and 'nu' provide the model-implied matrices. Per default a pheromone function using 'crel', 'rmsea', and 'srmr' is used. Please be aware that the \code{objective} must be a function with the required fit indices as (correctly named) arguments.
+#' 
+#' Using model comparisons via the \code{comparisons} argument compares the target model to a model with one less degree of assumed invariance (e.g. if your target model contains strong invariance, the comparison model contain weak invariance). Adding comparisons will change the preset for the objective function to include model differences. With comparisons, a custom objective function (the recommended approach) can also include all model fit indices with a preceding \code{delta.} to indicate the difference in this index between the two models. If more than one type of comparison is used, the argument of the objective function should end in the type of comparison requested (e.g. \code{delta.cfi.group} to use the difference in CFI between the model comparison of invariance across groups).
+#' 
 #' @author Martin Schultze
 #' 
 #' @seealso \code{\link{mmas}}, \code{\link{gene}}, \code{\link{randomsamples}}, \code{\link{combinations}}
@@ -22,6 +27,7 @@
 #' @param mtmm.invariance A character vector of length 1 or the same length as \code{mtmm} containing the invariance level of MTMM items. Currently there are five options: 'none', 'configural', 'weak', 'strong', and 'strict'. Defaults to 'configural'. With 'none' differing items are allowed for different methods. When \code{mtmm=NULL} this argument is ignored.
 #' @param grouping The name of the grouping variable. The grouping variable must be part of \code{data} provided and must be a numeric variable.
 #' @param group.invariance A single value describing the assumed invariance of items across groups. Currently there are four options: 'configural', 'weak', 'strong', and 'strict'. Defaults to 'strict'. When \code{grouping=NULL} this argument is ignored.
+#' @param comparisons A character vector containing any combination of 'item', 'long', 'mtmm', and 'group' indicating which invariance should be assessed via model comparisons. The order of the vector dictates the sequence in which model comparisons are performed. Defaults to \code{NULL} meaning that no model comparisons are performed. 
 #' @param auxiliary The names of auxiliary variables in \code{data}. These can be used in additional modeling steps that may be provided in \code{analysis.options$model}.
 #' @param use.order A logical indicating whether or not to take the selection order of the items into account. Defaults to \code{FALSE}.
 #' @param software The name of the estimation software. Can currently be 'lavaan' (the default), 'Mplus', or 'Mplus Demo'. Each option requires the software to be installed.
@@ -76,11 +82,11 @@ function(
   
   grouping=NULL, group.invariance='strict', #grouping structure
 
-  auxiliary=NULL, use.order=FALSE,
+  comparisons = NULL, auxiliary=NULL, use.order=FALSE,
 
   software='lavaan', cores=NULL,                                        #run settings
 
-  objective=objective.preset, ignore.errors=FALSE,                      #fitness specs
+  objective=NULL, ignore.errors=FALSE,                      #fitness specs
   
   analysis.options=NULL, suppress.model=FALSE,                          #modeling specs
 
@@ -157,7 +163,7 @@ function(
   output$solution <- NULL
   output$pheromones <- NULL
   output$subtests <- solution$selected.items
-  output$final <- final.model
+  output$final <- final.model$model
 
   class(output) <- 'stuartOutput'
   return(output)

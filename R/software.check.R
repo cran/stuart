@@ -4,13 +4,13 @@ function(software,cores,...) { #function begin
   #check for Mplus if requested
   if (software=='Mplus') {
     if (!(nzchar(Sys.which('mplus'))|nzchar(Sys.which('/Applications/Mplus/mplus')))) {
-      stop('Mplus is not installed. You could try using lavaan or OpenMx instead.\n',call.=FALSE) }
+      stop('Mplus is not installed. You could try using lavaan instead.\n',call.=FALSE) }
   }
   
   #check for lavaan if requested
   if (software=='lavaan') {
     if (!requireNamespace('lavaan')) {
-      stop('lavaan is not installed. You could try using OpenMx or Mplus instead.\n',call.=FALSE) }
+      stop('lavaan is not installed. You could try or Mplus instead.\n',call.=FALSE) }
   }
 
   if (!requireNamespace('parallel')) {

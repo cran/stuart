@@ -69,7 +69,12 @@ function(
   }
 
   #sanity check
-  do.call('sanitycheck',args[names(formals(sanitycheck))][!is.na(names(args[names(formals(sanitycheck))]))])
+  objective <- NULL
+  software <- 'lavaan'
+  grouping <- NULL
+  comparisons <- NULL
+  do.call('sanitycheck',mget(names(formals(sanitycheck))))
+  
   
   prepared <- do.call('data.prep',args)
   prepared$alpha <- 1

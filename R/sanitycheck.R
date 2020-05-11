@@ -1,6 +1,7 @@
 sanitycheck <- function(data, factor.structure,capacity,
-  repeated.measures,mtmm,
-  objective=NULL,localization,software='lavaan') {
+  repeated.measures,mtmm,grouping=NULL,
+  objective=NULL,localization,software='lavaan',
+  comparisons) {
   
   if (is.null(objective)) objective <- objective.preset
   #sanity check
@@ -12,6 +13,10 @@ sanitycheck <- function(data, factor.structure,capacity,
   
   if (any(sapply(data[, unlist(factor.structure)], is.factor)) & any(names(formals(objective))=='srmr') & software == 'Mplus') {
     stop('Mplus does not provide estimates for the SRMR when handling ordinal variables. Please change your objective function.', call. = FALSE)
+  }
+  
+  if (any(sapply(data[, unlist(factor.structure)], is.factor)) & !any(grepl('.scaled|.robust', names(formals(objective)))) & software == 'lavaan') {
+    warning('It is highly recommended to used either scaled or robust versions of model fit criteria in your objective function when modeling ordinal indicators with lavaan.', call. = FALSE)
   }
   
   if (any(duplicated(names(factor.structure)))) {
@@ -42,5 +47,11 @@ sanitycheck <- function(data, factor.structure,capacity,
   }
   
   if (!localization%in%c('arcs','nodes')) stop('Pheromones must be localized to arcs or nodes.',call.=FALSE)
+  
+  tmp_filt <- c(is.null(repeated.measures) & any(comparisons == 'long'), is.null(mtmm) & any(comparisons == 'mtmm'), is.null(grouping) & any(comparisons == 'group'))
+  tmp_pot <- cbind(c('long', 'mtmm', 'group'), c('repeated.measures', 'mtmm', 'grouping'))
+  if (any(tmp_filt)) {
+    stop(paste0('You requested comparisons for \"', tmp_pot[tmp_filt, 1], '\" but did not provide all necessary information in \"', tmp_pot[tmp_filt, 2], '\".'), call. = FALSE)
+  }
   
 }

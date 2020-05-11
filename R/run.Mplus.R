@@ -284,13 +284,13 @@ function(
   input <- paste0(input, analysis.options$constraints, '\n')
   
   #write Mplus "Output" section
-  if (!output.model) {
+  if (!output.model | ordinal) {
     input <- paste(input,'Output: STDYX Tech4 NOSERROR;\n')
 
     # Add Analysis Options Output section
     input <- paste0(input, analysis.options$output, '\n')
-    
   }
+  if (ordinal & output.model) warning('Due to a bug in MplusAutomation standard errors can currently not be computed when using ordinal indicators.', call. = FALSE)
   
   else {
     input <- paste(input,'Output: STDYX Tech4;\n')
@@ -325,8 +325,7 @@ function(
     tmp <- tmp[(grep('USED AS STARTING VALUES',tmp)+1):(grep('^TECHNICAL',tmp)[1]-1)]
     MplusOut$svalues <- tmp
   }
-  if (output.model) return(MplusOut)
-  
+
   exclusion <- FALSE
   if (length(MplusOut$errors) > 0) return(output=list(NA))
   if (!ignore.errors) {
@@ -341,6 +340,13 @@ function(
     #extract the fit statistics reported by Mplus
     output <- as.list(MplusOut$summaries)
     
+    name <- c('rmsea','srmr','wrmr','cfi','tli','chisq','df','pvalue','aic','bic','abic','npar')
+    locator <- c('RMSEA_Estimate', 'SRMR', 'WRMR', 'CFI', 'TLI', 'ChiSqM_Value', 'ChiSqM_DF', 'ChiSqM_PValue', 'AIC', 'BIC', 'aBIC', 'Parameters')
+    
+    for (i in seq_along(locator)) {
+      names(output)[which(names(output)==locator[i])] <- name[i]
+    }
+    
     #extract latent correlations
     if (is.null(grouping)) {
       lvcor <- list(MplusOut$tech4$latCorEst)
@@ -350,16 +356,19 @@ function(
       psi <- lapply(MplusOut$tech4, function(x) x$latCovEst)
     }
 
-    lvcor <- lapply(lvcor, function(x) {
-      x[upper.tri(x)] <- t(x)[upper.tri(x)]
-      dimnames(x) <- list(names(selected.items), names(selected.items))
-      return(x)})
-    psi <- lapply(psi, function(x) {
-      x[upper.tri(x)] <- t(x)[upper.tri(x)]
-      dimnames(x) <- list(names(selected.items), names(selected.items))
-      return(x)})
-    names(psi) <- names(lvcor) <- NULL
-    
+    # workaround for WLSMV bug in MplusAutomation
+    if (!is.null(lvcor)) {
+      lvcor <- lapply(lvcor, function(x) {
+        x[upper.tri(x)] <- t(x)[upper.tri(x)]
+        dimnames(x) <- list(names(selected.items), names(selected.items))
+        return(x)})
+      psi <- lapply(psi, function(x) {
+        x[upper.tri(x)] <- t(x)[upper.tri(x)]
+        dimnames(x) <- list(names(selected.items), names(selected.items))
+        return(x)})
+      names(psi) <- names(lvcor) <- NULL
+    }
+
     output$lvcor <- lvcor
     
     # compute rho estimate of reliability
@@ -449,6 +458,8 @@ function(
     tmp <- tmp[tmp$param %in% toupper(names(selected.items)), ]
     con <- mean(tapply(tmp$est, tmp$Group, mean))
 
+    if (output.model) output$model <- MplusOut
+    
     return(output=output)
   }  
   

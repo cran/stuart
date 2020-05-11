@@ -42,7 +42,11 @@ holdout <- function(data, prop = .5, grouping = NULL, seed = NULL) {
     if (length(prop) > 1 & length(prop) != nrow(unique(data[grouping]))) {
       prop <- prop[1]
       warning('The length of prop and the number of groups do not match. Only the first proportion is used.')
-    } 
+    }
+    if (any(is.na(data[grouping]))) {
+      data <- data[!is.na(data[grouping]), ]
+      warning('Data contains observations with missing values on the grouping variables. These were excluded.')
+    }
     n_cali <- ceiling(table(data[grouping]) * prop)
     filter <- NULL
     for (i in unlist(unique(data[grouping]))) {

@@ -60,6 +60,8 @@ function(
   objective <- NULL
   localization <- 'nodes'
   software <- 'lavaan'
+  grouping <- NULL
+  comparisons <- NULL
   do.call('sanitycheck',mget(names(formals(sanitycheck))))
   
   #data preparation

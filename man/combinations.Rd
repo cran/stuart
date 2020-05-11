@@ -4,8 +4,15 @@
 \alias{combinations}
 \title{Compute the number of possible subtest combinations}
 \usage{
-combinations(data, factor.structure, capacity = NULL,
-  repeated.measures = NULL, mtmm = NULL, use.order = FALSE, ...)
+combinations(
+  data,
+  factor.structure,
+  capacity = NULL,
+  repeated.measures = NULL,
+  mtmm = NULL,
+  use.order = FALSE,
+  ...
+)
 }
 \arguments{
 \item{data}{A data.frame containing all relevant data.}

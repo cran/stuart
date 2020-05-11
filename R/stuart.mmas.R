@@ -1,13 +1,14 @@
 stuart.mmas <-
 function(
-  short.factor.structure, short, long.equal,    #made on toplevel
+  short.factor.structure, short, long.equal, comparisons.equal,
+  comparisons.invariance, #made on toplevel
   capacity,
   data, factor.structure, auxi, use.order,                       #simple prerequisites
   item.invariance,
   repeated.measures, long.invariance,                            #longitudinal relations
   mtmm, mtmm.invariance,                                         #mtmm relations
   grouping, group.invariance,                                    #grouping relations
-
+  comparisons,
   software, cores,                                               #Software to be used
 
   objective=NULL, ignore.errors=FALSE,                           #objective function
@@ -47,7 +48,7 @@ function(
   class(deposit) <- 'numeric'
   
   #initialize scheduling 
-  scheduled <- c('ants','colonies','evaporation','pbest','alpha','beta','tolerance','deposit')
+  scheduled <- c('ants','colonies','evaporation','pbest','alpha','beta','tolerance','deposit','ignore.errors')
   
   #global assignment to avoid check note
   ants_cur <- NA
@@ -58,6 +59,7 @@ function(
   beta_cur <- NA
   tolerance_cur <- NA
   deposit_cur <- NA
+  ignore.errors_cur <- NA
   
   filt <- sapply(mget(scheduled),is.array)
   for (i in 1:length(scheduled[!filt])) {

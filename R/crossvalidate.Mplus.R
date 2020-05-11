@@ -26,8 +26,13 @@ function(
 
     all.data <- rbind(new.data, old.data)
     
-    results <- list(configural = NA, weak = NA, strong = NA, strict = NA)
-    models <- list(configural = NA, weak = NA, strong = NA, strict = NA)
+    results <- models <- list(configural = NA, weak = NA, strong = NA, strict = NA)
+    
+    if (all(sapply(all.data[, unlist(selection$subtests)], is.ordered))) {
+      results$strict <- models$strict <- NULL
+      warning('Strict measurement invariance is not implemented for exclusively ordinal indicators.', call. = FALSE)
+    }
+    
     
     for (invariance in names(results)) {
       equality <- character()
@@ -50,6 +55,16 @@ function(
         model_a <- gsub(tmp_labs[i], parlabs_a[i], model_a)
       }
       
+      if (invariance %in% c('configural', 'weak')) {
+        for (i in names(selection$subtests)) {
+          if (!grepl(paste0('\\[',i), model_a)) {
+            model_a <- paste0(model_a, '\n[', i, '@0];')
+          }
+        }
+      }
+      
+      model_a <- paste(model_a, paste0('{', unlist(selection$subtests), '@1};', collapse = '\n'), sep = '\n')
+      
       model_b <- gsub('A\\)', 'B\\)', model_a)
       
       analysis.options$model <- paste(gsub("\\(.+\\)", "", model), collapse = '\n')
@@ -57,15 +72,15 @@ function(
    
       args <- list(data=full.data,selected.items=selection$subtests,
         grouping=grouping,auxi=full.data[,NULL],suppress.model=TRUE,
-        output.model=FALSE,svalues=FALSE,factor.structure=selection$parameters$factor.structure,
+        output.model=TRUE,svalues=FALSE,factor.structure=selection$parameters$factor.structure,
         filename=filename,cores=NULL,
         analysis.options=analysis.options)
 
       results[[invariance]] <- do.call('run.Mplus',args)
+      models[[invariance]] <- results[[invariance]]$model
       results[[invariance]] <- as.data.frame(fitness(selection$parameters$objective, results[[invariance]], 'Mplus'))
       
-      args$output.model <- TRUE
-      models[[invariance]] <- do.call('run.Mplus',args)
+
     }
   }
 

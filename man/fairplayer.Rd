@@ -2,7 +2,9 @@
 \name{fairplayer}
 \alias{fairplayer}
 \title{MTMM fairplayer Intervention Data (2009)}
-\format{A data frame with 143 observations on 142 variables. The variable names consist of an initial letter indicating the source (s: self-report, t: teacher-report), two letters indicating the construct (EM: empathy, RA: relational aggression, SI: social intelligence), a number indicating the item number on the scale, and a "t" followed by a number indicating the measurement occasion.}
+\format{
+A data frame with 143 observations on 142 variables. The variable names consist of an initial letter indicating the source (s: self-report, t: teacher-report), two letters indicating the construct (EM: empathy, RA: relational aggression, SI: social intelligence), a number indicating the item number on the scale, and a "t" followed by a number indicating the measurement occasion.
+}
 \source{
 Bull, H., Schultze, M., Scheithauer, H. (2009) School-based prevention of bullying and relational aggression: The fairplayer.manual. European Journal of Developmental Science, 3:313-317.
 

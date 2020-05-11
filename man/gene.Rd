@@ -4,17 +4,48 @@
 \alias{gene}
 \title{Subtest construction using a simple genetic algorithm}
 \usage{
-gene(data, factor.structure, capacity = NULL, item.weights = NULL,
-  item.invariance = "congeneric", repeated.measures = NULL,
-  long.invariance = "strict", mtmm = NULL,
-  mtmm.invariance = "configural", grouping = NULL,
-  group.invariance = "strict", auxiliary = NULL, use.order = FALSE,
-  software = "lavaan", cores = NULL, objective = objective.preset,
-  ignore.errors = FALSE, generations = 128, individuals = 64,
-  elitism = 1/individuals, reproduction = 0.5, mutation = 0.1,
-  mating.index = 1, mating.size = 0.25, mating.criterion = "fitness",
-  tolerance = 1e-04, analysis.options = NULL, suppress.model = FALSE,
-  seed = NULL, filename = NULL)
+gene(
+  data,
+  factor.structure,
+  capacity = NULL,
+  item.weights = NULL,
+  item.invariance = "congeneric",
+  repeated.measures = NULL,
+  long.invariance = "strict",
+  mtmm = NULL,
+  mtmm.invariance = "configural",
+  grouping = NULL,
+  group.invariance = "strict",
+  comparisons = NULL,
+  auxiliary = NULL,
+  use.order = FALSE,
+  software = "lavaan",
+  cores = NULL,
+  objective = NULL,
+  ignore.errors = FALSE,
+  generations = 256,
+  individuals = 64,
+  selection = "tournament",
+  selection.pressure = NULL,
+  elitism = NULL,
+  reproduction = 0.5,
+  mutation = 0.05,
+  mating.index = 0,
+  mating.size = 0.25,
+  mating.criterion = "similarity",
+  immigration = 0,
+  convergence.criterion = "geno.between",
+  tolerance = NULL,
+  reinit.n = 1,
+  reinit.criterion = convergence.criterion,
+  reinit.tolerance = NULL,
+  reinit.prop = 0.75,
+  schedule = "run",
+  analysis.options = NULL,
+  suppress.model = FALSE,
+  seed = NULL,
+  filename = NULL
+)
 }
 \arguments{
 \item{data}{A data.frame containing all relevant data.}
@@ -39,6 +70,8 @@ gene(data, factor.structure, capacity = NULL, item.weights = NULL,
 
 \item{group.invariance}{A single value describing the assumed invariance of items across groups. Currently there are four options: 'configural', 'weak', 'strong', and 'strict'. Defaults to 'strict'. When \code{grouping=NULL} this argument is ignored.}
 
+\item{comparisons}{A character vector containing any combination of 'item', 'long', 'mtmm', and 'group' indicating which invariance should be assessed via model comparisons. The order of the vector dictates the sequence in which model comparisons are performed. Defaults to \code{NULL} meaning that no model comparisons are performed.}
+
 \item{auxiliary}{The names of auxiliary variables in \code{data}. These can be used in additional modeling steps that may be provided in \code{analysis.options$model}.}
 
 \item{use.order}{A logical indicating whether or not to take the selection order of the items into account. Defaults to \code{FALSE}.}
@@ -51,23 +84,41 @@ gene(data, factor.structure, capacity = NULL, item.weights = NULL,
 
 \item{ignore.errors}{A logical indicating whether or not to ignore estimation problems (such as non positive-definite latent covariance matrices). Defaults to \code{FALSE}.}
 
-\item{generations}{Maximum number of generations to run. Defaults to 128.}
+\item{generations}{Maximum number of generations to run. Defaults to 256.}
 
 \item{individuals}{The number of individuals per generation. Defaults to 64.}
+
+\item{selection}{The method used for selecting possible parents. Can be either \code{'proportional'} for fitness proportional random selection or \code{'tournament'} (the default) for a semi-deterministic selection.}
+
+\item{selection.pressure}{The pressure exerted during the selection process, depending on the \code{selection}: if \code{selection = 'proportional'} the non-linearity coefficient of the pheromone when determining selection probability (the default is 1); if \code{selection = 'proportional'} the number of randomly selected individuals from which to choose the best (the default is 5).}
 
 \item{elitism}{The proportion of individuals from the last generation to carry over to the next generation. Defaults to 1/individuals, meaning that the best individual is retained into the next generation.}
 
 \item{reproduction}{The proportion of individuals that are allowed to sire offspring. These individuals are selected using fitness proportionate selection. Defaults to .5.}
 
-\item{mutation}{The mutation probability. Defaults to .1. See 'details'.}
+\item{mutation}{The mutation probability. Defaults to .05. See 'details'.}
 
-\item{mating.index}{The relative rank of the selected mate within the mating pool. A number bewteen 0, indicating a best-last mating, and 1 (the default), indicating a best-first mating. See 'details'.}
+\item{mating.index}{The relative rank of the selected mate within the mating pool. A number bewteen 0 (the default) and 1. The meaning depends on the setting of \code{mating.criterion}. See 'details'.}
 
 \item{mating.size}{The proportion of potential mates sampled from the pool of reproducers for each selected individual. Defaults to .25. See 'details'.}
 
-\item{mating.criterion}{The criterion by which to select mates. Can be either 'similarity' or 'fitness' (the default). See 'details'.}
+\item{mating.criterion}{The criterion by which to select mates. Can be either 'similarity' (the default) or 'fitness'. See 'details'.}
 
-\item{tolerance}{The tolerance for deteriming convergence. Defaults to .0001. See 'details'.}
+\item{immigration}{The proportion of individuals per generation that are randomly generated immigrants. Defaults to 0.}
+
+\item{convergence.criterion}{The criterion by which convergence is determined. Can be one of four criteria \code{'variance'}, \code{'median'}, \code{'geno.within'}, and \code{'geno.between'} (the default). See 'details'.}
+
+\item{tolerance}{The tolerance for determining convergence. The default depends on the setting used for \code{convergence.criterion}. See 'details'.}
+
+\item{reinit.n}{The maximum number of reinitilizations to be performed. Defaults to 0. See 'details'.}
+
+\item{reinit.criterion}{The convergence criterion used to determine whether the population should be reinitialized. Can be one of four criteria \code{'variance'}, \code{'median'}, \code{'geno.within'}, and \code{'geno.between'}. Per default, the same criterion provided to \code{convergence.criterion} is used. See 'details'.}
+
+\item{reinit.tolerance}{The tolerance for determining the necessity of reinitialization. The default depends on the setting used for \code{convergence.criterion}. See 'details'.}
+
+\item{reinit.prop}{The proportion of the population to be discarded and replaced by random individuals when reinitializing. Defaults to .75. See 'details'.}
+
+\item{schedule}{The counter which the scheduling of parameters pertains to. Can be either 'run' (the default), for a continuous schedule, 'generation', for a schedule that is restarted every time the population is reinitialized.}
 
 \item{analysis.options}{A list additional arguments to be passed to the estimation software. The names of list elements must correspond to the arguments changed in the respective estimation software. E.g. \code{analysis.options$model} can contain additional modeling commands - such as regressions on auxiliary variables.}
 
@@ -86,7 +137,7 @@ Returns an object of the class \code{stuartOutput} for which specific \code{summ
 \item{timer}{An object of the class \code{proc_time} which contains the time used for the analysis.}
 \item{log}{A \code{data.frame} containing the optimization history.}
 \item{solution}{A list of matrices with the choices made in the global-best solution.}
-\item{pheromones}{\code{NULL}}
+\item{pheromones}{A list of matrices with the relative selection frequency of items in the final generation.}
 \item{subtests}{A list containing the names of the selected items and their respective subtests.}
 \item{final}{The results of the estimation of the global-best solution.}
 }
@@ -96,7 +147,13 @@ Construct subtests from a given pool of items using a simple genetic algorithm. 
 \details{
 The pheromone function provided via \code{objective} is used to assess the quality of the solutions. These functions can contain any combination of the fit indices provided by the estimation software. When using Mplus these fit indices are 'rmsea', 'srmr', 'cfi', 'tli', 'chisq' (with 'df' and 'pvalue'), 'aic', 'bic', and 'abic'. With lavaan any fit index provided by \code{\link[lavaan]{inspect}} can be used. Additionally 'crel' provides an aggregate of composite reliabilites, 'rel' provides a vector or a list of reliability coefficients for the latent variables, 'con' provides an aggregate consistency estimate for MTMM analyses, and 'lvcor' provides a list of the latent variable correlation matrices. For more detailed objective functions 'lambda', 'theta', 'psi', and 'alpha' provide the model-implied matrices. Per default a pheromone function using 'crel', 'rmsea', and 'srmr' is used. Please be aware that the \code{objective} must be a function with the required fit indices as (correctly named) arguments.
 
-The genetic algorithm implemented selects parents in a two-step procedure. First, a fitness proportionate selection is performed to select \code{inviduals} times \code{reproduction} viable parents. Then, the non-self-adaptive version of mating proposed by Galán, Mengshoel, and Pinter (2013) is used to perform mating. In contrast to the original article, the \code{mating.index} and \code{mating.size} are handled as proportions, not integers. Similarity-based mating is based on the Jaccard Similarity. Mutation is currently always handled as an exchange of the selection state between two items. This results in mutation selecting one item that was not selected prior to mutation and dropping one item selected prior to mutation. Convergence is checked via the variance of the global-best values on the objective function, as proposed by Bhandari, Murthy, and Pal (2012). To avoid false convergence in the early search, the lower of either 10\% of the generations or 10 generations must be completed, before convergence is checked. For generalizability over different functions provided to \code{objective}, these are scaled to the first global-best found.
+Using model comparisons via the \code{comparisons} argument compares the target model to a model with one less degree of assumed invariance (e.g. if your target model contains strong invariance, the comparison model contain weak invariance). Adding comparisons will change the preset for the objective function to include model differences. With comparisons, a custom objective function (the recommended approach) can also include all model fit indices with a preceding \code{delta.} to indicate the difference in this index between the two models. If more than one type of comparison is used, the argument of the objective function should end in the type of comparison requested (e.g. \code{delta.cfi.group} to use the difference in CFI between the model comparison of invariance across groups).
+
+The genetic algorithm implemented selects parents in a two-step procedure. First, either a tournament or a fitness proportionate selection is performed to select \code{inviduals} times \code{reproduction} viable parents. Then, the non-self-adaptive version of mating proposed by Galán, Mengshoel, and Pinter (2013) is used to perform mating. In contrast to the original article, the \code{mating.index} and \code{mating.size} are handled as proportions, not integers. Similarity-based mating is based on the Jaccard Similarity. Mutation is currently always handled as an exchange of the selection state between two items. This results in mutation selecting one item that was not selected prior to mutation and dropping one item selected prior to mutation. 
+
+Per default (\code{convergence.criterion = 'geno.between'}), convergence is checked by tracking the changes between selection probabilities over three subsequent generations. If the difference between these selections probabilities falls below \code{tolerance} (.01 by default) in three consecutive generations, the algorithm is deemed to have converged. To avoid false convergence in the early search, the lower of either 10\% of the generations or 10 generations must be completed, before convergence is checked. When using reinitialization the default for \code{reinit.tolerance} is .05 to initiate a full reinitialization of the population.  An alternative convergence criterion is the variance of the global-best values on the objective function, as proposed by Bhandari, Murthy, and Pal (2012). For generalizability over different functions provided to \code{objective}, variances are scaled to the first global-best found. In this case the setting for \code{tolerance} pertains to the pure variance estimate and defaults to .0005 (or .005 when regarding the reinitialization process discussed below). Alternatively, the setting \code{'median'} checks for the relative difference between the objective function value of the generation-best and the median value of a generation (scaled by the former). Here, the default is .05 (or .10 when regarding the reinitialization process). The setting \code{'geno.within'} checks for the variability of genotypes in a generation, by determining the relative frequency, with which each item is selected. Convergence is reached if this relative frequency is either \code{tolerance} (.8, by default - or .7 for the reinitialization process) or 1 - \code{tolerance} for all items within a generation. 
+
+A reinitialization procedure can be used to avoid premature convergence. The behavior is controlled via the arguments starting in \code{reinit}. The argument \code{reinit.n} determines the maximum number of possible reinitializations. After each reinitialization, the generation counter is reset, allowing for the maximum number of generations before the search is aborted. The \code{reinit.criterion} and \code{reinit.tolerance} relate to convergence criteria outlined above. It is recommended to use a higher tolerance on reinitialization than on final convergence to avoid long periods of stagnant search. The \code{reinit.prop} determines the proportion of the population to be replaced by random individuals when reinitializing. Note that even when \code{reinit.prop = 1}, the number of individuals kept due to \code{elitism} is not discarded.
 }
 \examples{
 
@@ -122,14 +179,15 @@ fs <- list(si1 = names(fairplayer)[83:92],
 repe <- list(si = c('si1', 'si2', 'si3'))
 
 # run to convergence
-# switching to best-last mating and 50\\\% mating size
+# switching to best-last mating and 50\\% mating size
 sel <- gene(fairplayer, fs, 4, 
   repeated.measures = repe, long.invariance = 'strong',
-  mating.index = 0, mating.size = .5,
+  mating.criterion = 'fitness', mating.index = 0, 
+  mating.size = .5,
   seed = 55635, cores = 1)
 
 # forcing a run through all generations
-# by disabling the variance convergence rule
+# by disabling the convergence rule
 sel <- gene(fairplayer, fs, 4,
   repeated.measures = repe, long.invariance = 'strong',
   tolerance = 0, seed = 55635,

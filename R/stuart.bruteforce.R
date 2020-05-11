@@ -1,13 +1,14 @@
 stuart.bruteforce <-
 function(
-  short.factor.structure, short, long.equal,    #made on toplevel
+  short.factor.structure, short, long.equal, comparisons.equal,
+  comparisons.invariance, #made on toplevel
   capacity,
   data, factor.structure, auxi, use.order,                       #simple prerequisites
   item.invariance,
   repeated.measures, long.invariance,                            #longitudinal relations
   mtmm, mtmm.invariance,                                         #mtmm relations
   grouping, group.invariance,                                    #grouping relations
-  
+  comparisons,
   software, cores,                                               #Software to be used
 
   objective=NULL, ignore.errors=FALSE,                        #fitness function

@@ -201,17 +201,17 @@ function(
     return(output=list(NA))
   }
 
-  if (output.model & class(output)=='lavaan') {
-    return(output=output)
-  }
-  
-  if (!output.model & class(output)=='lavaan') {
+  if (class(output)=='lavaan') {
 
     if (!ignore.errors) {
       if (!suppressWarnings(lavaan::inspect(output, 'post.check'))) return(output = list(NA))
     }
 
-    fit <- try(suppressWarnings(lavaan::fitMeasures(output, names(formals(objective)))),silent=TRUE)
+    fits <- names(formals(objective))
+    fits <- gsub('delta\\.', '', fits)
+    fits <- gsub('\\.items|\\.long|\\.mtmm|\\.group', '', fits)
+    fits <- unique(fits)
+    fit <- try(suppressWarnings(lavaan::fitMeasures(output, fits)),silent=TRUE)
     
     if (class(fit)[1]=='try-error') {
       return(output=list(NA))
@@ -269,7 +269,7 @@ function(
             rel[[i]][j] <- sum(lambda[[i]][,j,drop=FALSE]%*%psi[[i]][j,j,drop=FALSE]%*%t(lambda[[i]][,j,drop=FALSE]))/(sum(lambda[[i]][,j,drop=FALSE]%*%psi[[i]][j,j,drop=FALSE]%*%t(lambda[[i]][,j,drop=FALSE]))+sum(theta[[i]][filter,filter,drop=FALSE]))
           }
           # workaround for absence of short.factor.structure when crossvalidating
-          if (class(try(short.factor.structure,silent=TRUE))=='try-error' & !output.model) {
+          if (class(try(short.factor.structure,silent=TRUE))=='try-error') {
             short.factor.structure <- as.list(rep(NA,ncol(lambda[[i]])))
             names(short.factor.structure) <- colnames(lambda[[i]])
           }
@@ -301,23 +301,27 @@ function(
       lvcor <- lavaan::inspect(output,'cor.lv')
 
       #Listed in detail for quick overview of exported output
-      output <- as.list(fit)
-      output$crel <- crel
-      output$rel <- rel
-      output$lvcor <- lvcor
-      output$lambda <- lambda
-      output$theta <- theta
-      output$psi <- psi
-      output$alpha <- alpha
-      output$nu <- nu
-      output$beta <- beta
-      if (!is.na(con)) output$con <- con
+      results <- as.list(fit)
+      results$crel <- crel
+      results$rel <- rel
+      results$lvcor <- lvcor
+      results$lambda <- lambda
+      results$theta <- theta
+      results$psi <- psi
+      results$alpha <- alpha
+      results$nu <- nu
+      results$beta <- beta
+      if (!is.na(con)) results$con <- con
       if (ordinal) {
-        output$tau <- tau
-        output$delta <- delta
+        results$tau <- tau
+        results$delta <- delta
+      }
+      
+      if (output.model) {
+        results$model <- output
       }
 
-      return(output=output)
+      return(output=results)
     }
   }
 

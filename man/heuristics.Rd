@@ -4,9 +4,16 @@
 \alias{heuristics}
 \title{Generating heuristics for the use in STUART subtest construction}
 \usage{
-heuristics(data, factor.structure, capacity = NULL,
-  repeated.measures = NULL, mtmm = NULL, grouping = NULL,
-  localization = "nodes", ...)
+heuristics(
+  data,
+  factor.structure,
+  capacity = NULL,
+  repeated.measures = NULL,
+  mtmm = NULL,
+  grouping = NULL,
+  localization = "nodes",
+  ...
+)
 }
 \arguments{
 \item{data}{A data.frame containing all relevant data.}

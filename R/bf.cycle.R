@@ -3,7 +3,7 @@ function(run,
   filter, combi,
   data, auxi,                                                   #data and selection coding
   capacity,
-  long.equal,
+  long.equal, comparisons.equal, comparisons.invariance,
   factor.structure, repeated.measures, mtmm, grouping,          #basic requirements
   short.factor.structure, short,
   item.invariance, long.invariance, mtmm.invariance, group.invariance, #invariance settings
@@ -24,9 +24,30 @@ function(run,
   if (any(duplicated(unlist(selected.items)))) {
     solution.fit <- NA
   } else {
-    output.model=FALSE
-    run.options <- names(formals(paste('run',software,sep='.')))
-    solution.fit <- do.call(paste('run',software,sep='.'),as.list(mget(run.options)))
+    run.options <- mget(names(formals(paste('run',software,sep='.'))))
+    
+    if (length(comparisons.equal)==0) {
+      run.options$output.model <- FALSE
+      solution.fit <- do.call(paste('run',software,sep='.'), run.options)
+    } else {
+      run.options$output.model <- TRUE
+      solution.fit <- do.call(paste('run',software,sep='.'), run.options)
+
+      if (!is.na(solution.fit)[[1]]) {
+        comps <- list()
+        for (i in seq_along(comparisons.equal)) {
+          run.options$long.equal <- comparisons.equal[[i]]
+          run.options[grep('invariance',names(run.options))] <- comparisons.invariance[[i]]
+          comp.fit <- do.call(paste('run',software,sep='.'), run.options)
+          comps <- c(comps, unlist(compute.comparisons(objective, comp.fit, solution.fit, names(comparisons.equal)[i])))
+          if (is.logical(all.equal(objective.preset.comparisons, objective))) {
+            names(comps)[grepl('delta\\.', names(comps))] <- gsub(paste0('\\.', names(comparisons.equal)[[i]]), '', names(comps)[grepl('delta\\.', names(comps))])
+          }
+        }
+        solution.fit <- solution.fit[names(solution.fit)!='model']
+        solution.fit <- c(solution.fit, unlist(comps))
+      }
+    }
   }
 
   #compute pheromone
