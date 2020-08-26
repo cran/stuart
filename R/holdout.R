@@ -49,10 +49,10 @@ holdout <- function(data, prop = .5, grouping = NULL, seed = NULL) {
     }
     n_cali <- ceiling(table(data[grouping]) * prop)
     filter <- NULL
-    for (i in unlist(unique(data[grouping]))) {
-      tmp <- data[data[grouping] == i, ]
-      tmp_filter <- sort(sample(nrow(tmp), n_cali[i]))
-      filter <- c(filter, as.numeric(rownames(tmp)[tmp_filter]))
+    for (i in as.character(unlist(unique(data[grouping])))) {
+      tmp <- which(data[grouping] == i)
+      tmp_filter <- sample(tmp, n_cali[i])
+      filter <- c(filter, tmp_filter)
     }
   } else {
     n_cali <- ceiling(nrow(data)*prop)

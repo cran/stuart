@@ -164,7 +164,7 @@ function(
     }
     
     #add variable residuals
-    if (group.invariance!='strict') {
+    if (unlist(group.invariance)!='strict') {
       for (i in 2:length(levels(group))) {
         for (j in 1:length(factor.structure)) {
           equal[[i]][[j]]$eps <- paste(equal[[i]][[j]]$eps,'g',i,sep='')
@@ -173,7 +173,7 @@ function(
     }
     
     #add variable intercepts
-    if (group.invariance%in%c('weak','configural')) {
+    if (unlist(group.invariance)%in%c('weak','configural')) {
       for (i in 2:length(levels(group))) {
         for (j in 1:length(factor.structure)) {
           equal[[i]][[j]]$alp <- paste(equal[[i]][[j]]$alp,'g',i,sep='')
@@ -182,7 +182,7 @@ function(
     }
 
     #add variable loadings
-    if (group.invariance=='configural') {
+    if (unlist(group.invariance)=='configural') {
       for (i in 2:length(levels(group))) {
         for (j in 1:length(factor.structure)) {
           equal[[i]][[j]]$lam <- paste(equal[[i]][[j]]$lam,'g',i,sep='')

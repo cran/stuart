@@ -57,7 +57,7 @@ function(run,
   solution.phe <- do.call(fitness,fitness.options)
   if (!is.null(objective)) {
     if ('rel'%in%names(formals(objective))) {
-      if (all(is.na(solution.phe$rel))) solution.phe$rel <- rep(NA,length(factor.structure)*max(c(1,length(unique(data[,grouping])))))
+      if (all(is.na(solution.phe$rel))) solution.phe$rel <- rep(NA,length(factor.structure)*max(c(1,sum(!is.na(unique(data[, grouping]))))))
     }
   }
   

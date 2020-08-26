@@ -125,7 +125,7 @@ function(
       # write latent means
       if (long.invariance[[which(unlist(lapply(repeated.measures,function(x) is.element(names(factor.structure)[i],x))))]]%in%c('strong','strict')) {
         if (names(selected.items[i])%in%lapply(repeated.measures, function(x) x[1])) {
-          if (!is.null(grouping)&group.invariance%in%c('strong','strict')) {
+          if (!is.null(grouping)&unlist(group.invariance)%in%c('strong','strict')) {
             input <- paste(input,
               paste0(names(selected.items[i]),'~c(', paste(c(0,rep(NA,nlevels(as.factor(model.data$group))-1)),collapse=','),')*1',collapse='\n'),sep='\n')
           } else {
@@ -139,7 +139,7 @@ function(
       }
       
       if (!is.null(grouping) & length(repeated.measures[[locate]])==1) {
-        if (group.invariance %in% c('strong', 'strict')) {
+        if (unlist(group.invariance) %in% c('strong', 'strict')) {
           input <- paste(input,
             paste0(names(selected.items[i]),'~c(', paste(c(0,rep(NA,nlevels(as.factor(model.data$group))-1)),collapse=','),')*1',collapse='\n'),sep='\n')
         }

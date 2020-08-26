@@ -1,7 +1,7 @@
-e8e04953e2adcee6307c41009e902a09 *DESCRIPTION
+96ef2258e39710060f6a6db8407632d5 *DESCRIPTION
 1e2cc4d66f3f1bba11ae6b62754c678e *NAMESPACE
 3bdb1a6a1045b039cf51e6d27c15d1d4 *R/ant.cycle.R
-dfd5d0ccf10e33ed9813a8f49445694f *R/bf.cycle.R
+dbb674b314a39338c5f9249a1ed63234 *R/bf.cycle.R
 c58796462834a4aa60efd32e99abf944 *R/bruteforce.R
 5729928e2aba7d5d664ed6e42055f66f *R/combinations.R
 3e2ab2bd4c77f7b122678bd2855f155d *R/compute.combinations.R
@@ -17,9 +17,9 @@ e0ad4bc958665515158e55900c1a8bfe *R/data.prep.R
 f5e2278522c64fb65eeceaf2a37eae43 *R/gene.R
 4aa0eb906168907c911aee34754d11bf *R/generate.combinations.R
 6b6869f1e87c31c08266d0a0529a2a08 *R/heuristics.R
-e6411d7946585c01d49b1f72d0175598 *R/holdout.R
+e21356aca6a9f8e9246baad0e3239d2a *R/holdout.R
 3c6ac9a14d369b1b594f7c5265077af7 *R/init.pheromones.R
-0a6eead32d9d144c81a30ffb7f666969 *R/invariance.implementation.R
+a44c17b02f5bcb5c509475a8ed1dfd8b *R/invariance.implementation.R
 94af5b445a71c3fdc4377c63dcda9b82 *R/mmas.R
 0d3c414d0fb7a97fa298e288aec8be32 *R/mmas.update.R
 d607a9115e26d1c8e528709d1c517860 *R/objective.preset.R
@@ -29,7 +29,7 @@ dca0bbbd90d24921e6bcd84328d604eb *R/plot.stuartOutput.R
 b4056fa4088131bdeec9cf734319862f *R/print.summary.stuartOutput.R
 1d8ab359898ed53fb9faf20133b1c402 *R/randomsamples.R
 2a756a6f01f1b5a2cc0b2c5b93272805 *R/run.Mplus.R
-943ddfccfabbde547e59827e5939f926 *R/run.lavaan.R
+622e0f95604df157c8663994c92f01d5 *R/run.lavaan.R
 cb46450c2ebc5ea2dd31399e1dcd61ab *R/sanitycheck.R
 388205c48f938da4f310d20244201c34 *R/software.check.R
 32002da0c2ac4fc686c4487d1dc97a71 *R/stuart-internal.R
