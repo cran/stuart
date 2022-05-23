@@ -49,6 +49,7 @@
 #' \item{analysis.options}{A list of the additional arguments passed to the estimation software.}
 #' \item{timer}{An object of the class \code{proc_time} which contains the time used for the analysis.}
 #' \item{log}{A \code{data.frame} containing the estimation history.}
+#' \item{log_mat}{A \code{list} of matrices (e.g. lvcor) relevant to the estimation history, if any.}
 #' \item{solution}{\code{NULL}}
 #' \item{pheromones}{\code{NULL}}
 #' \item{subtests}{A list containing the names of the selected items and their respective subtests.}
@@ -97,7 +98,7 @@ randomsamples <-
     args <- as.list(match.call())[-1]
     args <- c(args,formals()[!names(formals())%in%c(names(args),'...')])
     #select calibration sample (change to methods later)
-    if (class(data) == 'stuartHoldout') {
+    if (inherits(data, 'stuartHoldout')) {
       data <- data$calibrate
       args$data <- data
     }
@@ -143,7 +144,8 @@ randomsamples <-
     output$analysis.options <- analysis.options
     output$timer <- proc.time() - timer
     output$log <- solution$log
-    output$solution <- NULL
+    output$log_mat <- solution$log_mat
+    output$solution <- solution$solution.sel
     output$pheromones <- NULL
     output$subtests <- solution$selected.items
     output$final <- final.model$model

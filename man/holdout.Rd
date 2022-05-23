@@ -4,7 +4,7 @@
 \alias{holdout}
 \title{Data selection for holdout validation.}
 \usage{
-holdout(data, prop = 0.5, grouping = NULL, seed = NULL)
+holdout(data, prop = 0.5, grouping = NULL, seed = NULL, determined = NULL)
 }
 \arguments{
 \item{data}{A \code{data.frame}.}
@@ -14,6 +14,8 @@ holdout(data, prop = 0.5, grouping = NULL, seed = NULL)
 \item{grouping}{Name of the grouping variable. Providing a grouping variable ensures that the provided proportion is selected within each group.}
 
 \item{seed}{A random seed. See \code{\link{Random}} for more details.}
+
+\item{determined}{Name of a variable indicating the pre-determined assignment to the calibration or the validation sample. This variable must be a factor containing only \code{NA} (no determined assingment), \code{"calibrate"}, or \code{"validate"}. If no variable is provided (the default) all cases are assigned randomly.}
 }
 \value{
 Returns a list containing two \code{data.frame}s, called calibrate and validate. The first corresponds to the calibration sample, the second to the validation sample.

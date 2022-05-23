@@ -23,6 +23,7 @@ gene(
   cores = NULL,
   objective = NULL,
   ignore.errors = FALSE,
+  burnin = 5,
   generations = 256,
   individuals = 64,
   selection = "tournament",
@@ -84,6 +85,8 @@ gene(
 
 \item{ignore.errors}{A logical indicating whether or not to ignore estimation problems (such as non positive-definite latent covariance matrices). Defaults to \code{FALSE}.}
 
+\item{burnin}{Number of generations for which to use fixed objective function before switching to empirical objective. Ignored if \code{objective} is not of class \code{stuartEmpiricalObjetive}. Defaults to 5.}
+
 \item{generations}{Maximum number of generations to run. Defaults to 256.}
 
 \item{individuals}{The number of individuals per generation. Defaults to 64.}
@@ -136,6 +139,7 @@ Returns an object of the class \code{stuartOutput} for which specific \code{summ
 \item{analysis.options}{A list of the additional arguments passed to the estimation software.}
 \item{timer}{An object of the class \code{proc_time} which contains the time used for the analysis.}
 \item{log}{A \code{data.frame} containing the optimization history.}
+\item{log_mat}{A \code{list} of matrices (e.g. lvcor) relevant to the estimation history, if any.}
 \item{solution}{A list of matrices with the choices made in the global-best solution.}
 \item{pheromones}{A list of matrices with the relative selection frequency of items in the final generation.}
 \item{subtests}{A list containing the names of the selected items and their respective subtests.}

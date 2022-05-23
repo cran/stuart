@@ -56,10 +56,10 @@ function(
   #parallel processing for R-internal estimations
   if (software=='lavaan') {
     if (cores>1) {
-      if (.Platform$GUI=='RStudio') message('Progressbars are not functional when utilizing multiple cores for bruteforce in RStudio.')
+      if (.Platform$GUI=='RStudio') message('\nProgressbars are not functional when utilizing multiple cores for bruteforce in RStudio.')
       #set up parallel processing on windows
       if (grepl('Windows',Sys.info()[1],ignore.case=TRUE)) {
-        if (!.Platform$GUI=='RStudio') message('Progressbars are not functional when utilizing multiple cores for bruteforce in Windows.')
+        if (!.Platform$GUI=='RStudio') message('\nProgressbars are not functional when utilizing multiple cores for bruteforce in Windows.')
         cl <- parallel::makeCluster(cores)
         
         bf.results <- parallel::parLapply(cl,1:nrow(filter),function(run) {
@@ -103,8 +103,29 @@ function(
     )
   }
   
-
-  log <- cbind(1:nrow(filter),t(sapply(bf.results, function(x) array(data=unlist(x$solution.phe)))))
+  # Evaluate using empirical objective
+  if (inherits(objective, 'stuartEmpiricalObjective')) {
+    args <- c(objective$call, x = list(bf.results))
+    objective <- do.call(empiricalobjective, args)
+    bf.results <- lapply(bf.results, function(x) {
+      x$solution.phe$pheromone <- do.call(objective$func, x$solution.phe[-1])
+      return(x)})
+  }
+  
+    #generate matrix output
+  mat_fil <- c('lvcor', 'lambda', 'theta', 'psi', 'alpha', 'beta', 'nu')
+  mat_fil <- mat_fil[mat_fil %in% names(formals(objective$func))]
+  mats <- as.list(vector('numeric', length(mat_fil)))
+  names(mats) <- mat_fil
+  
+  for (m in seq_along(mat_fil)) {
+    mats[[m]] <- sapply(bf.results, function(x) x$solution.phe[mat_fil[m]])
+    names(mats[[m]]) <- 1:nrow(filter)
+  }
+  
+  log <- cbind(1:nrow(filter),t(sapply(bf.results, function(x) array(data=unlist(x$solution.phe[!names(x$solution.phe)%in%mat_fil])))))
+  log <- data.frame(log)
+  names(log) <- c('run',names(bf.results[[1]]$solution.phe)[!names(bf.results[[1]]$solution.phe)%in%mat_fil])
 
   #best solution
   run.gb <- which.max(sapply(bf.results, function(x) return(x$solution.phe$pheromone)))
@@ -119,13 +140,20 @@ function(
   message('\nSearch ended.')
 
   tried <- try(do.call(cbind, lapply(filter, function(y) do.call(rbind,lapply(y, function(x) combi[[1]][x, ])))), silent = TRUE)
-  if (class(tried)[1]=='try-error') warning('The full list of evaluated solutions could not be retrieved.',call.=FALSE)
+  if (inherits(tried, 'try-error')) warning('The full list of evaluated solutions could not be retrieved.',call.=FALSE)
+
+  # construction solution in standard format
+  solution.gb <- short.factor.structure
+  for (i in 1:length(short.factor.structure)) {
+    solution.gb[[i]] <- seq_along(short.factor.structure[[i]])
+    solution.gb[[i]] <- solution.gb[[i]] %in% selected.gb[[i]]
+    names(solution.gb[[i]]) <- short.factor.structure[[i]]
+  }
   
   results <- mget(grep('.gb',ls(),value=TRUE))
   results$selected.items <- translate.selection(selected.gb,factor.structure,short)
-  log <- data.frame(log)
-  names(log) <- c('run',names(bf.results[[1]]$solution.phe))
   results$log <- log
+  results$log_mat <- mats
   results$tried <- tried
   results$pheromones <- NULL
   results$parameters <- list(objective=objective, factor.structure=factor.structure)

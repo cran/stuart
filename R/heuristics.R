@@ -64,7 +64,7 @@ function(
   args <- as.list(match.call())[-1]
   args <- c(args,formals()[!names(formals())%in%names(args)])
   args$number.of.substests <- 1
-  if (class(data) == 'stuartHoldout') {
+  if (inherits(data, 'stuartHoldout')) {
     args$data <- data$calibrate
   }
 

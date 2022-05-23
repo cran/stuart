@@ -9,9 +9,11 @@
 #' 
 #' Using this package subtests can be generated in four different ways: using a pseudo-random approach rooted in Ant-Colony-Optimization via the \code{\link{mmas}}-function, using a simple genetic algorithm via the \code{\link{gene}}-function, using a brute-force approach via the aptly named \code{\link{bruteforce}}-function, or by random chance, using the \code{\link{randomsamples}}-function.
 #' 
-#' Addtionally, there are some convenience functions which are more or less useful. The \code{\link{combinations}}-function can be used to determine the number of possible subtests to inform a decision on which selection approach to use. The \code{\link{crossvalidate}}-function can be used to evaluate the quality of a selection in a different (sub-)sample. To add to this functionality, the \code{\link{holdout}}-function randomly splits the data into a calibration and a validation sample. The \code{\link{heuristics}}-function can be used to extract the formatting of heuristic matrices which can be provided to the \code{\link{mmas}}-function.
+#' Addtionally, there are some convenience functions which are more or less useful. The \code{\link{combinations}}-function can be used to determine the number of possible subtests to inform a decision on which selection approach to use. The \code{\link{crossvalidate}}-function can be used to evaluate the quality of a selection in a different (sub-)sample. To add to this functionality, the \code{\link{holdout}}-function randomly splits the data into a calibration and a validation sample. The entire process can be applied to k samples with \code{\link{kfold}}. The \code{\link{heuristics}}-function can be used to extract the formatting of heuristic matrices which can be provided to the \code{\link{mmas}}-function.
 #' 
-#' The package also provides two datasets: the \code{\link{sups}} dataset and the \code{\link{fairplayer}} dataset.
+#' As of version 0.10.0 this package also includes some convenience functions for handling objective functions. These are mainly \code{\link{fixedobjective}} - to generate a fixed objective function containing any number of a variety of possible quality criteria - and \code{\link{empiricalobjective}} - to generate an adaptive objective function based on the quality determined for previous solution on any such criteria. In addition \code{\link{objectivematrices}} provides functionality to extract matrices for situations in which, for example, latent correlations or regressions predicting distal outcomes are included into the selection procedure.
+#' 
+#' The package also provides three datasets to try things out with: \code{\link{fairplayer}}, \code{\link{sia}}, and \code{\link{sups}}. 
 #' 
 #' @docType package
 "_PACKAGE"

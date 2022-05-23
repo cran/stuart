@@ -65,7 +65,7 @@ function(
   do.call('sanitycheck',mget(names(formals(sanitycheck))))
   
   #data preparation
-  if (class(data) == 'stuartHoldout') {
+  if (inherits(data, 'stuartHoldout')) {
     args$data <- data$calibrate
   }
   prepared <- do.call('data.prep',args)

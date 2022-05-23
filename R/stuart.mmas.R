@@ -12,6 +12,7 @@ function(
   software, cores,                                               #Software to be used
 
   objective=NULL, ignore.errors=FALSE,                           #objective function
+  burnin = 5,
   
   ants=16, colonies=256, evaporation=.95,                        #general ACO parameters
   deposit='ib', pbest=.005, localization='nodes',                #MMAS parameters
@@ -60,6 +61,7 @@ function(
   tolerance_cur <- NA
   deposit_cur <- NA
   ignore.errors_cur <- NA
+  objective_cur <- NA
   
   filt <- sapply(mget(scheduled),is.array)
   for (i in 1:length(scheduled[!filt])) {
@@ -220,23 +222,39 @@ function(
     }
     
     #fill in results for duplicates
-    tmp <- vector('list', ants_cur)
-    tmp[filter[,1]] <- ant.results
-    tmp[sapply(tmp,is.null)] <- log[stats::na.omit(duplicate)]
-    ant.results <- tmp
+    tmp_results <- vector('list', ants_cur)
+    tmp_results[filter[,1]] <- ant.results
+    tmp <- log[stats::na.omit(duplicate)]
+    tmp <- lapply(tmp, function(x) {
+      if(all(is.na(x$solution.phe[-1]))) x$solution.phe$pheromone <- 0
+      else x$solution.phe$pheromone <- do.call(objective$func, x$solution.phe[-1])
+      if(is.na(x$solution.phe$pheromone)) x$solution.phe$pheromone <- 0
+      return(x)})
+    tmp_results[sapply(tmp_results,is.null)] <- tmp
+    ant.results <- tmp_results
     
     #iteration.best memory
     ant.ib <- which.max(sapply(ant.results, function(x) return(x$solution.phe$pheromone)))
+    logged.ib <- ant.results[[ant.ib]]
     solution.ib <- constructed[[ant.ib]]$solution
     phe.ib <- ant.results[[ant.ib]]$solution.phe$pheromone
     selected.ib <- ant.results[[ant.ib]]$selected
 
+    #updated global best
+    if (inherits(objective, 'stuartEmpiricalObjective')) {
+      if (run > max(c(burnin, 1))) {
+        if(all(is.na(logged.gb$solution.phe[-1]))) phe.gb <- 0
+        else phe.gb <- do.call(objective$func, logged.gb$solution.phe[-1])
+      }
+    }
+    
     #feedback
     utils::setTxtProgressBar(progress,colony)
 
     #global.best memory
     if (phe.ib > phe.gb | run == 1) {
       count.gb <- count.gb + 1
+      logged.gb <- logged.ib
       solution.gb <- solution.ib
       phe.gb <- phe.ib
       selected.gb <- selected.ib
@@ -268,13 +286,17 @@ function(
     pheromones <- mmas.update(pheromones,phe.min,phe.max,evaporation_cur,localization,
       get(paste('phe',c('ib','gb')[deposit_cur],sep='.')),get(paste('solution',c('ib','gb')[deposit_cur],sep='.')))
 
-    
     #create log
     log <- c(log, ant.results)
     counter <- rbind(counter, c(run, ants_cur))
     # log <- rbind(log,cbind(rep(run,ants_cur),1:ants_cur,t(sapply(ant.results, function(x) array(data=unlist(x$solution.phe))))))
     
-    
+    # update empirical objective
+    if (inherits(objective, 'stuartEmpiricalObjective') & run > burnin) {
+      args <- c(objective$call, x = list(log))
+      objective <- do.call(empiricalobjective, args)
+    }
+
     #check for convergence
     if (localization=='arcs') {
       conv <- lapply(pheromones,function(x) x[lower.tri(x)])
@@ -313,16 +335,42 @@ function(
   }
   
   # reformat log
-  tmp <- as.numeric(unlist(apply(counter, 1, function(x) seq(1,x[2]))))
-  log <- cbind(cumsum(tmp==1),tmp,t(sapply(log, function(x) array(data=unlist(x$solution.phe)))))
-  log <- data.frame(log)
-  names(log) <- c('run','ant',names(ant.results[[1]]$solution.phe))
+  #generate matrix output
+  mat_fil <- c('lvcor', 'lambda', 'theta', 'psi', 'alpha', 'beta', 'nu')
+  mat_fil <- mat_fil[mat_fil %in% names(formals(objective$func))]
+  mats <- as.list(vector('numeric', length(mat_fil)))
+  names(mats) <- mat_fil
   
+  for (m in seq_along(mat_fil)) {
+    mats[[m]] <- sapply(log, function(x) x$solution.phe[mat_fil[m]])
+    names(mats[[m]]) <- 1:length(log)
+  }
+  
+  # apply final pheromone function retroactively (empirical objectives)
+  if (inherits(objective, 'stuartEmpiricalObjective')) {
+    final_pheromone <- sapply(log, function(x) {
+      if (x$solution.phe$pheromone == 0) 0
+      else {do.call(objective$func, x$solution.phe[-1])}
+    })
+  }
+  
+  tmp <- as.numeric(unlist(apply(counter, 1, function(x) seq(1,x[2]))))
+  log <- cbind(cumsum(tmp==1),tmp,t(sapply(log, function(x) array(data=unlist(x$solution.phe[!names(x$solution.phe)%in%mat_fil])))))
+  log <- data.frame(log)
+  names(log) <- c('run','ant',names(ant.results[[1]]$solution.phe)[!names(ant.results[[1]]$solution.phe)%in%mat_fil])
+  if (inherits(objective, 'stuartEmpiricalObjective')) {
+    log$pheromone <- final_pheromone
+  }
+  
+  # name solutions
+  for (i in seq_along(solution.gb)) names(solution.gb[[i]]) <- short.factor.structure[[i]]
+  names(solution.gb) <- names(short.factor.structure)
   
   #Generating Output
   results <- mget(grep('.gb',ls(),value=TRUE))
   results$selected.items <- translate.selection(selected.gb,factor.structure,short)
   results$log <- log
+  results$log_mat <- mats
   results$pheromones <- pheromones
   results$parameters <- list(ants=ants,colonies=colonies,evaporation=evaporation,
     deposit=deposit_save,pbest=pbest,localization=localization,
@@ -331,6 +379,7 @@ function(
     objective=objective,
     heuristics=heuristics,
     factor.structure=factor.structure)
+  results$end.reason <- end.reason
   return(results)
 
 }

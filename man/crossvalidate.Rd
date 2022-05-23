@@ -4,7 +4,13 @@
 \alias{crossvalidate}
 \title{Cross-Validate a Measurement Model}
 \usage{
-crossvalidate(selection, old.data, new.data, filename = NULL)
+crossvalidate(
+  selection,
+  old.data,
+  new.data,
+  max.invariance = "strict",
+  filename = NULL
+)
 }
 \arguments{
 \item{selection}{An object of class \code{stuartOutput}.}
@@ -12,6 +18,8 @@ crossvalidate(selection, old.data, new.data, filename = NULL)
 \item{old.data}{A \code{data.frame} of the calibration sample.}
 
 \item{new.data}{A \code{data.frame} of the validation sample.}
+
+\item{max.invariance}{The maximum measurement invariance level which will be tested. Currently there are four options: 'configural', 'weak', 'strong', and 'strict' (the default). All levels below \code{max.invariance} are also tested.}
 
 \item{filename}{The stem of the filenames used to save inputs, outputs, and data files when \code{software='Mplus'}. This may include the file path. When \code{NULL} (the default) files will be saved to the temporary directory, which is deleted when the R session is ended.}
 }

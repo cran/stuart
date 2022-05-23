@@ -11,6 +11,7 @@
 #' @param selection An object of class \code{stuartOutput}.
 #' @param old.data A \code{data.frame} of the calibration sample.
 #' @param new.data A \code{data.frame} of the validation sample.
+#' @param max.invariance The maximum measurement invariance level which will be tested. Currently there are four options: 'configural', 'weak', 'strong', and 'strict' (the default). All levels below \code{max.invariance} are also tested. 
 #' @param filename The stem of the filenames used to save inputs, outputs, and data files when \code{software='Mplus'}. This may include the file path. When \code{NULL} (the default) files will be saved to the temporary directory, which is deleted when the R session is ended.
 #' 
 ### Outputs ----
@@ -55,6 +56,7 @@
 crossvalidate <- 
 function(
   selection, old.data, new.data,
+  max.invariance = 'strict',
   filename = NULL
 ) { #begin function
   
@@ -69,7 +71,7 @@ function(
   args <- args[names(args)%in%names(formals(paste('crossvalidate',software,sep='.')))]
   
   #select calibration sample (change to methods later)
-  if (class(old.data) == 'stuartHoldout') {
+  if (inherits(old.data, 'stuartHoldout')) {
     args$new.data <- old.data$validate
     args$old.data <- old.data$calibrate
   }
@@ -78,7 +80,7 @@ function(
   args$analysis.options <- selection$analysis.options
   
   # run validation
-  output <- do.call(paste('crossvalidate',software,sep='.'),args)
+  output <- do.call(paste('crossvalidate',software,sep='.'), args)
   
   class(output) <- c('stuartCrossvalidate')
   return(output)

@@ -23,6 +23,7 @@ mmas(
   cores = NULL,
   objective = NULL,
   ignore.errors = FALSE,
+  burnin = 5,
   ants = 16,
   colonies = 256,
   evaporation = 0.95,
@@ -78,6 +79,8 @@ mmas(
 
 \item{ignore.errors}{A logical indicating whether or not to ignore estimation problems (such as non positive-definite latent covariance matrices). Defaults to \code{FALSE}.}
 
+\item{burnin}{Number of colonies for which to use fixed objective function before switching to empirical objective. Ignored if \code{objective} is not of class \code{stuartEmpiricalObjetive}. Defaults to 5.}
+
 \item{ants}{The number of ants per colony to be estimated. Can either be a single value or an array with two columns for parameter scheduling. See 'details'.}
 
 \item{colonies}{The maximum number of colonies estimated since finding the latest global-best solution before aborting the process. Can either be a single value or an array with two columns for parameter scheduling. See 'details'.}
@@ -118,6 +121,7 @@ Returns an object of the class \code{stuartOutput} for which specific \code{summ
 \item{analysis.options}{A list of the additional arguments passed to the estimation software.}
 \item{timer}{An object of the class \code{proc_time} which contains the time used for the analysis.}
 \item{log}{A \code{data.frame} containing the optimization history.}
+\item{log_mat}{A \code{list} of matrices (e.g. lvcor) relevant to the estimation history, if any.}
 \item{solution}{A list of matrices with the choices made in the global-best solution.}
 \item{pheromones}{A list of matrices with the pheromones of each choice.}
 \item{subtests}{A list containing the names of the selected items and their respective subtests.}
@@ -160,34 +164,6 @@ sel <- mmas(fairplayer, fs, 4,
   repeated.measures = repe, long.invariance = 'strong',
   evaporation = cbind(c(0, 10, 20), c(.95, .8, .5)),
   seed = 55635, cores = 1)
-
-# adding a predictor variable to selection model (using lavaan)
-data(fairplayer)
-fs <- list(si = names(fairplayer)[83:92])
-
-add <- 'si ~ IGS'
-
-sel <- mmas(fairplayer, fs, 4,
-  auxiliary = 'IGS',
-  analysis.options = list(model = add),
-  seed = 55635, cores = 1)
-
-# inspect regression (in lavaan)
-lavaan::coef(sel$final)
-
-# same example, maximizing regression weight
-obj <- function(chisq, df, pvalue, rmsea, srmr, beta) {
-  beta[1, 'IGS']
-}
-
-sel <- mmas(fairplayer, fs, 4,
-  auxiliary = 'IGS',
-  analysis.options = list(model = add),
-  objective = obj,
-  seed = 55635, cores = 1)
-  
-# inspect regression (in lavaan)
-lavaan::coef(sel$final)
 }
 
 }

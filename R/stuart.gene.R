@@ -11,7 +11,7 @@ stuart.gene <-
     comparisons,
     software, cores,                                               #Software to be used
     
-    objective=NULL, ignore.errors=FALSE,                           #objective function
+    objective=NULL, ignore.errors=FALSE, burnin = 5,               #objective function
     
     generations = 256, individuals = 64,                                  #algorithm specs
     selection = 'tournament', selection.pressure = NULL,
@@ -236,7 +236,12 @@ stuart.gene <-
       if (run == 1) {
         bf.results <- tmp[duplicate]
       } else {
-        tmp[sapply(tmp,is.null)] <- log[stats::na.omit(duplicate)]
+        redo <- lapply(log[stats::na.omit(duplicate)], function(x) {
+          if(all(is.na(x$solution.phe[-1]))) x$solution.phe$pheromone <- 0
+          else x$solution.phe$pheromone <- do.call(objective$func, x$solution.phe[-1])
+          if(is.na(x$solution.phe$pheromone)) x$solution.phe$pheromone <- 0
+          return(x)})
+        tmp[sapply(tmp,is.null)] <- redo
         bf.results <- tmp
       }
       
@@ -371,6 +376,7 @@ stuart.gene <-
       
       #iteration.best memory
       individual.ib <- which.max(sapply(bf.results, function(x) return(x$solution.phe$pheromone)))
+      logged.ib <- bf.results[[individual.ib]]
       solution.ib <- list()
       for (i in seq_along(short.factor.structure)) {
         solution.ib[[i]] <- seq_along(short.factor.structure[[i]])%in%bf.results[[individual.ib]]$selected[[i]]
@@ -378,9 +384,18 @@ stuart.gene <-
       phe.ib <- bf.results[[individual.ib]]$solution.phe$pheromone
       selected.ib <- bf.results[[individual.ib]]$selected
       
+      #updated global best
+      if (inherits(objective, 'stuartEmpiricalObjective')) {
+        if (run > max(c(burnin, 1))) {
+          if(all(is.na(logged.gb$solution.phe[-1]))) phe.gb <- 0
+          else phe.gb <- do.call(objective$func, logged.gb$solution.phe[-1])
+        }
+      }
+      
       #global.best memory
       if (phe.ib > phe.gb | generation == 1) {
         solution.gb <- solution.ib
+        logged.gb <- logged.ib
         phe.gb <- phe.ib
         selected.gb <- selected.ib
       }
@@ -475,6 +490,13 @@ stuart.gene <-
         }
       }
       
+      # update empirical objective
+      if (inherits(objective, 'stuartEmpiricalObjective') & run > burnin) {
+        args <- c(objective$call, x = list(log))
+        objective <- do.call(empiricalobjective, args)
+      }
+      
+      
       # reinitialization
       if (reinit & cur_reinit.n > 0) {
         keep <- max(round(individuals_cur * (1 - reinit.prop_cur)), round(individuals_cur * elitism_cur))
@@ -513,11 +535,33 @@ stuart.gene <-
     message(paste('\nSearch ended.',end.reason))      
     
     # reformat log
-    log <- cbind(sapply(log, function(x) x$run), NA, t(sapply(log, function(x) array(data=unlist(x$solution.phe)))))
-    log[, 2] <- unlist(sapply(table(log[, 1]), function(x) 1:x))
-    log <- data.frame(log)
-    names(log) <- c('run','ind',names(bf.results[[1]]$solution.phe))
+    #generate matrix output
+    mat_fil <- c('lvcor', 'lambda', 'theta', 'psi', 'alpha', 'beta', 'nu')
+    mat_fil <- mat_fil[mat_fil %in% names(formals(objective$func))]
+    mats <- as.list(vector('numeric', length(mat_fil)))
+    names(mats) <- mat_fil
     
+    for (m in seq_along(mat_fil)) {
+      mats[[m]] <- sapply(log, function(x) x$solution.phe[mat_fil[m]])
+      names(mats[[m]]) <- 1:length(log)
+    }
+    
+    # apply final pheromone function retroactively (empirical objectives)
+    if (inherits(objective, 'stuartEmpiricalObjective')) {
+      final_pheromone <- sapply(log, function(x) {
+        if (x$solution.phe$pheromone == 0) 0
+        else {do.call(objective$func, x$solution.phe[-1])}
+      })
+    }
+
+    tmp <- sapply(log, `[[`, 1)
+    tmp <- unlist(lapply(table(tmp), function(x) seq(1, x)))
+    log <- cbind(cumsum(tmp == 1), tmp, t(sapply(log, function(x) array(data=unlist(x$solution.phe[!names(x$solution.phe)%in%mat_fil])))))
+    log <- data.frame(log)
+    names(log) <- c('run', 'ind',names(bf.results[[1]]$solution.phe)[!names(bf.results[[1]]$solution.phe)%in%mat_fil])
+    if (inherits(objective, 'stuartEmpiricalObjective')) {
+      log$pheromone <- final_pheromone
+    }
     
     #return to previous random seeds
     if (!is.null(seed)) {
@@ -548,9 +592,12 @@ stuart.gene <-
     names(geno) <- names(short.factor.structure)
     
     for (i in seq_along(solution.gb)) names(solution.gb[[i]]) <- short.factor.structure[[i]]
+    names(solution.gb) <- names(short.factor.structure)
+    
     results <- mget(grep('.gb',ls(),value=TRUE))
     results$selected.items <- translate.selection(selected.gb,factor.structure,short)
     results$log <- log
+    results$log_mat <- mats
     results$pheromones <- pheromones
     results$parameters <- list(generations, individuals, selection, selection.pressure, elitism, mutation, mating.index, mating.size,
       mating.criterion, immigration, convergence.criterion, tolerance, 
@@ -563,6 +610,7 @@ stuart.gene <-
       'seed', 'objective', 'factor.structure')
     results$convergence <- convergence
     results$genotype <- geno
+    results$end.reason <- end.reason
 
     return(results)
     

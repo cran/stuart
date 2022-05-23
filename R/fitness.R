@@ -2,7 +2,7 @@ fitness <-
 function(objective = NULL, solution.fit, software
 ) { #begin function
 
-  criteria <- names(formals(objective))
+  criteria <- names(formals(objective$func))
   
   output <- list()
   
@@ -15,7 +15,7 @@ function(objective = NULL, solution.fit, software
   }
   
   else {
-    pheromone <- do.call(objective,solution.fit[names(formals(objective))])
+    pheromone <- do.call(objective$func,solution.fit[names(formals(objective$func))])
     
     output[[1]] <- pheromone
     for (i in 1:length(criteria)) {
@@ -29,12 +29,12 @@ function(objective = NULL, solution.fit, software
   }
   
   # remove matrices from output
-  output$lvcor <- NULL
-  output$lambda <- NULL
-  output$theta <- NULL
-  output$psi <- NULL
-  output$alpha <- NULL
-  output$beta <- NULL
+  # output$lvcor <- NULL
+  # output$lambda <- NULL
+  # output$theta <- NULL
+  # output$psi <- NULL
+  # output$alpha <- NULL
+  # output$beta <- NULL
   
   return(output)
 

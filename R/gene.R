@@ -43,6 +43,7 @@
 #' @param cores The number of cores to be used in parallel processing. If \code{NULL} (the default) the result of \code{\link[parallel]{detectCores}} will be used. On Unix-y machines parallel processing is implemented via \code{\link[parallel]{mclapply}}, on Windows machines it is realized via \code{\link[parallel]{parLapply}}.
 #' @param objective A function that converts the results of model estimation into a pheromone. See 'details' for... details.
 #' @param ignore.errors A logical indicating whether or not to ignore estimation problems (such as non positive-definite latent covariance matrices). Defaults to \code{FALSE}.
+#' @param burnin Number of generations for which to use fixed objective function before switching to empirical objective. Ignored if \code{objective} is not of class \code{stuartEmpiricalObjetive}. Defaults to 5.
 #' @param generations Maximum number of generations to run. Defaults to 256.
 #' @param individuals The number of individuals per generation. Defaults to 64.
 #' @param selection The method used for selecting possible parents. Can be either \code{'proportional'} for fitness proportional random selection or \code{'tournament'} (the default) for a semi-deterministic selection.
@@ -76,6 +77,7 @@
 #' \item{analysis.options}{A list of the additional arguments passed to the estimation software.}
 #' \item{timer}{An object of the class \code{proc_time} which contains the time used for the analysis.}
 #' \item{log}{A \code{data.frame} containing the optimization history.}
+#' \item{log_mat}{A \code{list} of matrices (e.g. lvcor) relevant to the estimation history, if any.}
 #' \item{solution}{A list of matrices with the choices made in the global-best solution.}
 #' \item{pheromones}{A list of matrices with the relative selection frequency of items in the final generation.}
 #' \item{subtests}{A list containing the names of the selected items and their respective subtests.}
@@ -149,7 +151,7 @@ gene <-
     
     software='lavaan', cores=NULL,                                        #run settings
     
-    objective=NULL, ignore.errors=FALSE,                      #fitness specs
+    objective=NULL, ignore.errors=FALSE, burnin = 5,                      #fitness specs
     
     generations = 256, individuals = 64,                                  #algorithm specs
     selection = 'tournament', selection.pressure = NULL,
@@ -176,7 +178,7 @@ gene <-
     args <- c(args,formals()[!names(formals())%in%c(names(args),'...')])
     
     #select calibration sample (change to methods later)
-    if (class(data) == 'stuartHoldout') {
+    if (inherits(data, 'stuartHoldout')) {
       data <- data$calibrate
       args$data <- data
     }
@@ -221,9 +223,11 @@ gene <-
     output$analysis.options <- analysis.options
     output$timer <- proc.time() - timer
     output$log <- solution$log
+    output$log_mat <- solution$log_mat
     output$solution <- solution$solution.gb
     output$pheromones <- solution$genotype
     output$subtests <- solution$selected.items
+    output$end.reason <- solution$end.reason
     output$final <- final.model$model
     
     class(output) <- 'stuartOutput'

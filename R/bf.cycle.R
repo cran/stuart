@@ -39,8 +39,8 @@ function(run,
           run.options$long.equal <- comparisons.equal[[i]]
           run.options[grep('invariance',names(run.options))] <- comparisons.invariance[[i]]
           comp.fit <- do.call(paste('run',software,sep='.'), run.options)
-          comps <- c(comps, unlist(compute.comparisons(objective, comp.fit, solution.fit, names(comparisons.equal)[i])))
-          if (is.logical(all.equal(objective.preset.comparisons, objective))) {
+          comps <- c(comps, unlist(compute.comparisons(objective$func, comp.fit, solution.fit, names(comparisons.equal)[i])))
+          if (length(comparisons.equal) == 1) {
             names(comps)[grepl('delta\\.', names(comps))] <- gsub(paste0('\\.', names(comparisons.equal)[[i]]), '', names(comps)[grepl('delta\\.', names(comps))])
           }
         }
@@ -56,7 +56,7 @@ function(run,
   if (any(sapply(mtmm,length))>1) fitness.options$criteria <- c(as.character(fitness.options$criteria)[-1],'con')
   solution.phe <- do.call(fitness,fitness.options)
   if (!is.null(objective)) {
-    if ('rel'%in%names(formals(objective))) {
+    if ('rel'%in%names(formals(objective$func))) {
       if (all(is.na(solution.phe$rel))) solution.phe$rel <- rep(NA,length(factor.structure)*max(c(1,sum(!is.na(unique(data[, grouping]))))))
     }
   }

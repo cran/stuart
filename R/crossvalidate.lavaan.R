@@ -2,7 +2,7 @@
 crossvalidate.lavaan <- 
 function(
   selection, old.data, new.data, output.model=TRUE, 
-  analysis.options = NULL, ...
+  analysis.options = NULL, max.invariance = 'strict', ...
 ) { #begin function
   
   # retrieve old results
@@ -45,6 +45,11 @@ function(
   all.data <- rbind(new.data, old.data)
 
   results <- models <- list(configural = NA, weak = NA, strong = NA, strict = NA)
+  if (!(max.invariance %in% names(models))) {
+    stop('The "max.invariance" must be one of "configural", "weak", "strong", or "strict".', call. = FALSE)
+  }
+  results <- models <- models[1:which(names(models) == max.invariance)]
+  internal_matrices <- models
 
   if (all(sapply(all.data[, unlist(selection$subtests)], is.ordered))) {
     results$strict <- models$strict <- NULL
@@ -82,7 +87,7 @@ function(
     analysis.options$model <- pars
     
     args <- list(data=all.data,selected.items=selection$subtests,
-      grouping=grouping,auxi=all.data[,NULL],suppress.model=TRUE,
+      grouping=grouping,auxi=all.data[,selection$call$auxiliary, drop = FALSE],suppress.model=TRUE,
       analysis.options=analysis.options,objective=selection$parameters$objective,ignore.errors=TRUE,
       output.model=TRUE,factor.structure=selection$parameters$factor.structure)
     
@@ -90,20 +95,32 @@ function(
     models[[invariance]] <- results[[invariance]]$model
     if (is.null(models[[invariance]])) models[[invariance]] <- NA
     
-    results[[invariance]] <- as.data.frame(fitness(selection$parameters$objective, results[[invariance]], 'lavaan'))
-    
+    # if objective contians model parameters, take only validation sample
+    tmp.results <- results
+    if (!is.null(selection$parameters$objective$call$matrices)) {
+      fil <- names(eval(selection$parameters$objective$call$matrices))
+      tmp.results[[invariance]][fil] <- lapply(tmp.results[[invariance]][fil], `[[`, 1)
+      warning('When crossvalidating, only model parameters of the validation sample are used to compute pheromones.', call. = FALSE)
+    } else {
+      fil <- NULL
+    }
+    internal_matrices[[invariance]] <- tmp[names(tmp)%in%fil]
+    tmp <- fitness(selection$parameters$objective, tmp.results[[invariance]], 'lavaan')
+    results[[invariance]] <- as.data.frame(t(unlist(tmp[!names(tmp)%in%fil])))
   }
 
   results <- do.call(rbind, results)
-  comps <- try(do.call(lavaan::lavTestLRT, c(object=models[[1]], models[-1])), silent = TRUE)
-  if (class(comps)[1]=='try-error') {
-    comps <- matrix(NA, ncol = 7, nrow = 4)
-    colnames(comps)[5:7] <- c('Chisq diff', 'Df diff', 'Pr(>Chisq)')
-    warning('One or more of the models resulted in an error. The LRT cannot be computed.', call. = FALSE)
+  if (length(models) > 1) {
+    comps <- try(do.call(lavaan::lavTestLRT, c(object=models[[1]], models[-1])), silent = TRUE)
+    if (class(comps)[1]=='try-error') {
+      comps <- matrix(NA, ncol = 7, nrow = 4)
+      colnames(comps)[5:7] <- c('Chisq diff', 'Df diff', 'Pr(>Chisq)')
+      warning('One or more of the models resulted in an error. The LRT cannot be computed.', call. = FALSE)
+    }
+    rownames(comps) <- names(models)
+    results <- cbind(results, comps[, 5:7])
   }
-  rownames(comps) <- names(models)
-  results <- cbind(results, comps[, 5:7])
-  output <- list(comparison = results, models = models)
+  output <- list(comparison = results, models = models, matrices = internal_matrices)
   
   return(output)
   

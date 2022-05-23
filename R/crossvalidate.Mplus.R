@@ -2,7 +2,7 @@
 crossvalidate.Mplus <-
 function(
   selection, old.data, new.data, output.model=TRUE, 
-  analysis.options = NULL, filename, ...
+  analysis.options = NULL, max.invariance = 'strict', filename, ...
 ) { # begin function
   
   if (is.null(filename)) filename <- paste0(tempdir(), '/stuart')
@@ -27,6 +27,10 @@ function(
     all.data <- rbind(new.data, old.data)
     
     results <- models <- list(configural = NA, weak = NA, strong = NA, strict = NA)
+    if (!(max.invariance %in% names(models))) {
+      stop('The "max.invariance" must be one of "configural", "weak", "strong", or "strict".', call. = FALSE)
+    }
+    results <- models <- models[1:which(names(models) == max.invariance)]
     
     if (all(sapply(all.data[, unlist(selection$subtests)], is.ordered))) {
       results$strict <- models$strict <- NULL
@@ -85,25 +89,27 @@ function(
   }
 
   results <- do.call('rbind', results)
-  if(any(sapply(full.data[, unlist(selection$subtests)], is.factor))) {
-    warning('Model comparisons for ordinal indicators using Mplus are not yet implemented.', call. = FALSE)
-  } else {
-    results$`Chisq diff` <- NA
-    results$`Df diff` <- NA
-    results$`Pr(>Chisq)` <- NA
-    
-    # Model comparisons
-    for (i in seq_along(models)[-1]) {
-      m0 <- models[[i]]$summaries
-      m1 <- models[[i-1]]$summaries
-      correction <- ifelse(is.null(m0$ChiSqM_ScalingCorrection), 1, 
-        (m0$Parameters * m0$ChiSqM_ScalingCorrection - m1$Parameters*m1$ChiSqM_ScalingCorrection)/(m0$Parameters - m1$Parameters))
-      results$`Chisq diff`[i] <- -2*(m0$LL - m1$LL)/correction
-      results$`Df diff`[i] <- m1$Parameters - m0$Parameters
-      results$`Pr(>Chisq)`[i] <- stats::pchisq(results$`Chisq diff`[i], results$`Df diff`[i], lower.tail = FALSE)
-    }
+  if (length(models) > 1) {
+    if(any(sapply(full.data[, unlist(selection$subtests)], is.factor))) {
+      warning('Model comparisons for ordinal indicators using Mplus are not yet implemented.', call. = FALSE)
+    } else {
+      results$`Chisq diff` <- NA
+      results$`Df diff` <- NA
+      results$`Pr(>Chisq)` <- NA
+      
+      # Model comparisons
+      for (i in seq_along(models)[-1]) {
+        m0 <- models[[i]]$summaries
+        m1 <- models[[i-1]]$summaries
+        correction <- ifelse(is.null(m0$ChiSqM_ScalingCorrection), 1, 
+          (m0$Parameters * m0$ChiSqM_ScalingCorrection - m1$Parameters*m1$ChiSqM_ScalingCorrection)/(m0$Parameters - m1$Parameters))
+        results$`Chisq diff`[i] <- -2*(m0$LL - m1$LL)/correction
+        results$`Df diff`[i] <- m1$Parameters - m0$Parameters
+        results$`Pr(>Chisq)`[i] <- stats::pchisq(results$`Chisq diff`[i], results$`Df diff`[i], lower.tail = FALSE)
+      }
+    }    
   }
-  
+
   output <- list(comparison = results, models = models)
   return(output)
   

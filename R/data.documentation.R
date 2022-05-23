@@ -20,3 +20,32 @@
 #' @source Schultze, M. (2012). Evaluating What The Crowd Says. A longitudinal structural equation model for exchangeable and structurally different methods for evaluating interventions. Unpublished Diploma Thesis.
 #' 
 "fairplayer"
+
+### Roxygen-inzable documentation
+#' Data from a German Meaning of Work Scale.
+#' 
+#' Self-reports from a scale construction study for a German Meaning of Work Scale (Feser et al., 2019) with three facets: Self-realization (17 items), belonging (9 items), justification (8 Items). The data additionally include assessments on the Work and Meaning Inventory (Steger et al., 2012), alienation from work (Fischer and Kohr, 2014). 
+#' 
+#' \itemize{
+#'   \item lfdn. Participant ID.
+#'   \item self1 - self17. 17 items of the self-realization facet.
+#'   \item belong1 - belong9. 9 items of the belonging facet.
+#'   \item just1 - just8. 8 items of the justification facet.
+#'   \item wami1 - wami10. 10 items of the Work and Meaning Inventory.
+#'   \item alien1 - alien10. 10 item of the alienation from work sacle.
+#'   \item age. Age in years.
+#'   \item sex. Gender with 1 = female, 2 = other, 3 = male.
+#'   \item work. Type of employment 1 = employed, 2 = self-employed, 3 = temp-work, 4 = civil servant.
+#'   \item wokrhours. Weekly work hours.
+#'   \item tenure1. Years at the current place of employment.
+#'   \item tenure2. Years of experience in current job.
+#'   \item kldb2010. German Classification of Occupations (first code number).
+#' }
+#' 
+#' @format A data frame with 257 observations on 62 variables.
+#' 
+#' @source Feser, M., Lorenz, T., & Mainz, E. (2019). Meaning of work: A culture based approach towards the construction of a German questionnaire. Poster presented at the 19th Congress of The European Association for Work & Organizational Psychology. Turin, Italy.
+#' @source Fischer, A., & Kohr, H. (2014). Entfremdung von der Arbeit. Zusammentstellung Sozialwissenschaftlicher Items Und Skalen, ZIS. https://doi.org/https://doi.org/10.6102/zis8
+#' @source Steger, M. F., Dik, B. J., & Duffy, R. D. (2012). Measuring Meaningful Work. Journal of Career Assessment, 20(3), 322–337. https://doi.org/10.1177/1069072711436160
+#' 
+"sia"

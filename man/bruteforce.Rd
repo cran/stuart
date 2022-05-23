@@ -79,6 +79,7 @@ Returns an object of the class \code{stuartOutput} for which specific \code{summ
 \item{analysis.options}{A list of the additional arguments passed to the estimation software.}
 \item{timer}{An object of the class \code{proc_time} which contains the time used for the analysis.}
 \item{log}{A \code{data.frame} containing the estimation history.}
+\item{log_mat}{A \code{list} of matrices (e.g. lvcor) relevant to the estimation history, if any.}
 \item{solution}{\code{NULL}}
 \item{pheromones}{\code{NULL}}
 \item{subtests}{A list containing the names of the selected items and their respective subtests.}

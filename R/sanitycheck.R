@@ -3,20 +3,11 @@ sanitycheck <- function(data, factor.structure,capacity,
   objective=NULL,localization,software='lavaan',
   comparisons) {
   
-  if (is.null(objective)) objective <- objective.preset
   #sanity check
   if (any(sapply(data[, unlist(factor.structure)], function(x) all(class(x)=='factor')))) {
     if (!all(sapply(data[, unlist(factor.structure)], nlevels) %in% c(0, 2))) {
       stop('Currently only binary, ordinal, and continuous items are supported.', call. = FALSE)
     }
-  }
-  
-  if (any(sapply(data[, unlist(factor.structure)], is.factor)) & any(names(formals(objective))=='srmr') & software == 'Mplus') {
-    stop('Mplus does not provide estimates for the SRMR when handling ordinal variables. Please change your objective function.', call. = FALSE)
-  }
-  
-  if (any(sapply(data[, unlist(factor.structure)], is.factor)) & !any(grepl('.scaled|.robust', names(formals(objective)))) & software == 'lavaan') {
-    warning('It is highly recommended to used either scaled or robust versions of model fit criteria in your objective function when modeling ordinal indicators with lavaan.', call. = FALSE)
   }
   
   if (any(duplicated(names(factor.structure)))) {
@@ -38,11 +29,22 @@ sanitycheck <- function(data, factor.structure,capacity,
   }
   
   if (!is.null(objective)) {
-    if (!is.function(objective)) {
+    if (!is.function(objective$func)) {
       stop('The objective function you requested is not a function.',call.=FALSE)
     }
-    if (is.null(mtmm)&'con'%in%names(formals(objective))) {
+    if (is.null(mtmm)&'con'%in%names(formals(objective$func))) {
       stop('The objective function you requested uses consistency in the pheromone computation but mtmm=NULL',call.=FALSE)
+    }
+    if (any(sapply(data[, unlist(factor.structure)], is.factor)) & any(names(formals(objective$func))=='srmr') & software == 'Mplus') {
+      stop('Mplus does not provide estimates for the SRMR when handling ordinal variables. Please change your objective function.', call. = FALSE)
+    }
+    
+    if (any(sapply(data[, unlist(factor.structure)], is.factor)) & !any(grepl('.scaled|.robust', names(formals(objective$func)))) & software == 'lavaan') {
+      warning('It is highly recommended to used either scaled or robust versions of model fit criteria in your objective function when modeling ordinal indicators with lavaan.', call. = FALSE)
+    }
+    
+    if (any(grepl('delta.', names(formals(objective$func)))) & is.null(grouping) & is.null(mtmm) & is.null(repeated.measures)) {
+      stop('Your objective function contains a model comparison value, but you provided no groups, mwthods, or occasions to compare.', call. = FALSE)
     }
   }
   
