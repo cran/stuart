@@ -33,7 +33,7 @@
 #' data(fairplayer)
 #' fs <- list(ra = names(fairplayer)[53:57])
 #' 
-#' sel <- kfold('bruteforce', k = 3,
+#' sel <- kfold('bruteforce', k = 2,
 #'   data = fairplayer, factor.structure = fs, 
 #'   capacity = 3, seed = 55635,
 #'   cores = 1)
@@ -48,7 +48,7 @@
 #' 
 #' repe <- list(si = c('si1', 'si2', 'si3'))
 #' 
-#' sel_mmas <- kfold('mmas', k = 5,
+#' sel_mmas <- kfold('mmas', k = 3,
 #'   data = fairplayer, factor.structure = fs,
 #'   repeated.measures = repe, long.invariance = 'strong',
 #'   capacity = 3, seed = 55635, pbest = .5,
@@ -107,7 +107,7 @@ kfold <- function(type, k = 5,
   }
   
   check <- sapply(searches, function(x) 'try-error' %in% class(x))
-  if (all(check)) stop('None of the folds resulted in viable solutions. This may be the result of the sample being to small for the number of folds.', call. = FALSE)
+  if (all(check)) stop('None of the folds resulted in viable solutions. This may be the result of the sample being too small for the number of folds.', call. = FALSE)
 
   # Run crossvalidation
   message('\nRunning cross-validation.\n')

@@ -28,9 +28,7 @@ extractobjective <- function(x,         # Input parameter
     ...                                 # Additional arguments passed
   ) {
   
-  # mark as deprecated
-  .Deprecated('empiricalobjective', 'stuart', 'Objectives can now be extracted from stuartOutput-objects directly by using empiricalobjective().')
-  
+
   # which side to use
   side <- side[1]
   if (side == 'centre') side <- 'center'

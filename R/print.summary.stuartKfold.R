@@ -12,7 +12,7 @@ print.summary.stuartKfold <-
     cat('\nCrossvalidation Results with', toupper(x$max.invariance), 'Invariance:\n')
     print(x$Results)
     cat('\nAverage Jaccard Similarity: ')
-    cat(paste0(paste0(names(x$Jaccard),': ',paste(x$Jaccard), collapse=', '), '\n'))
+    cat(paste0(paste0(names(x$Jaccard),': ',sprintf(x$Jaccard, fmt = '%#.3f'), collapse=', '), '\n'))
     cat(paste0('\nConstructed Subtests: (k = ', which.max(x$Results$pheromone), ')\n'))
     for (i in 1:length(x$Subtests)) {
       cat(paste0(names(x$Subtests)[i],': ',paste(x$Subtests[[i]],collapse=' '),'\n'))

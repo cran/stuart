@@ -113,7 +113,7 @@ gene(
 
 \item{tolerance}{The tolerance for determining convergence. The default depends on the setting used for \code{convergence.criterion}. See 'details'.}
 
-\item{reinit.n}{The maximum number of reinitilizations to be performed. Defaults to 0. See 'details'.}
+\item{reinit.n}{The maximum number of reinitilizations to be performed. Defaults to 1. See 'details'.}
 
 \item{reinit.criterion}{The convergence criterion used to determine whether the population should be reinitialized. Can be one of four criteria \code{'variance'}, \code{'median'}, \code{'geno.within'}, and \code{'geno.between'}. Per default, the same criterion provided to \code{convergence.criterion} is used. See 'details'.}
 

@@ -299,6 +299,10 @@ function(
       
       # Export the latent variable correlation matrix
       lvcor <- lavaan::inspect(output,'cor.lv')
+      
+      # Export optimizer information
+      technicals <- lavaan::inspect(output, 'optim')
+      technicals <- technicals[names(technicals) != 'control']
 
       #Listed in detail for quick overview of exported output
       results <- as.list(fit)
@@ -316,6 +320,7 @@ function(
         results$tau <- tau
         results$delta <- delta
       }
+      results$technicals <- technicals
       
       if (output.model) {
         results$model <- output

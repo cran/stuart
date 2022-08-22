@@ -52,7 +52,7 @@ The function splits the provided data into k subsets using \code{\link{holdout}}
 data(fairplayer)
 fs <- list(ra = names(fairplayer)[53:57])
 
-sel <- kfold('bruteforce', k = 3,
+sel <- kfold('bruteforce', k = 2,
   data = fairplayer, factor.structure = fs, 
   capacity = 3, seed = 55635,
   cores = 1)
@@ -67,7 +67,7 @@ fs <- list(si1 = names(fairplayer)[83:92],
 
 repe <- list(si = c('si1', 'si2', 'si3'))
 
-sel_mmas <- kfold('mmas', k = 5,
+sel_mmas <- kfold('mmas', k = 3,
   data = fairplayer, factor.structure = fs,
   repeated.measures = repe, long.invariance = 'strong',
   capacity = 3, seed = 55635, pbest = .5,

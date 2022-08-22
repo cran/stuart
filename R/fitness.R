@@ -1,5 +1,5 @@
 fitness <-
-function(objective = NULL, solution.fit, software
+function(objective = NULL, solution.fit, software, technicals = NULL
 ) { #begin function
 
   criteria <- names(formals(objective$func))
@@ -26,6 +26,10 @@ function(objective = NULL, solution.fit, software
   
   if (length(output$pheromone)!=1) {
     stop('The objective function you provided does not return a single value.', call. = FALSE)
+  }
+  
+  if (!is.null(technicals)) {
+    output$technicals <- solution.fit$technicals[technicals]
   }
   
   # remove matrices from output

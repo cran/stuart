@@ -57,7 +57,7 @@
 #' @param immigration The proportion of individuals per generation that are randomly generated immigrants. Defaults to 0.
 #' @param convergence.criterion The criterion by which convergence is determined. Can be one of four criteria \code{'variance'}, \code{'median'}, \code{'geno.within'}, and \code{'geno.between'} (the default). See 'details'.
 #' @param tolerance The tolerance for determining convergence. The default depends on the setting used for \code{convergence.criterion}. See 'details'.
-#' @param reinit.n The maximum number of reinitilizations to be performed. Defaults to 0. See 'details'.
+#' @param reinit.n The maximum number of reinitilizations to be performed. Defaults to 1. See 'details'.
 #' @param reinit.criterion The convergence criterion used to determine whether the population should be reinitialized. Can be one of four criteria \code{'variance'}, \code{'median'}, \code{'geno.within'}, and \code{'geno.between'}. Per default, the same criterion provided to \code{convergence.criterion} is used. See 'details'.
 #' @param reinit.tolerance The tolerance for determining the necessity of reinitialization. The default depends on the setting used for \code{convergence.criterion}. See 'details'. 
 #' @param reinit.prop The proportion of the population to be discarded and replaced by random individuals when reinitializing. Defaults to .75. See 'details'.
