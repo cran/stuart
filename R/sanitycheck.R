@@ -28,7 +28,7 @@ sanitycheck <- function(data, factor.structure,capacity,
       unlist(mtmm)[!unlist(mtmm)%in%names(factor.structure)]),call.=FALSE)
   }
   
-  if (!is.null(objective)) {
+  if (!is.null(objective) & !inherits(objective, 'function')) {
     if (!is.function(objective$func)) {
       stop('The objective function you requested is not a function.',call.=FALSE)
     }

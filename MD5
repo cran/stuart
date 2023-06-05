@@ -1,4 +1,4 @@
-85c1d62e097acd830706085dd6683b9f *DESCRIPTION
+72949858dd698fdeb16f509c3a562def *DESCRIPTION
 8d0786ba7817800be22075665ada5e3d *NAMESPACE
 3bdb1a6a1045b039cf51e6d27c15d1d4 *R/ant.cycle.R
 2ed533e0d2d3a0e8ae631ecb217c672f *R/bf.cycle.R
@@ -13,10 +13,10 @@ f2c6de5025e3b698b121e6eac10825d4 *R/crossvalidate.R
 4473e00a34f9e9036f056dd9043f3d29 *R/crossvalidate.lavaan.R
 403294f7e5335b7ca2a1ee144ee81416 *R/data.documentation.R
 6cbb446ec0dfd565fda635d04bc10c56 *R/data.prep.R
-4c1c5bfdbe8e8807c0339878a3b8b7ff *R/empiricalobjective.R
+6a7240aa4422410b59ac1751d6956fed *R/empiricalobjective.R
 80065deaf3209188eff61263a65147ab *R/extractobjective.R
 da2eee6b1727f4600ae372190c9ab143 *R/fitness.R
-43584693e250e9a9268cd87607eba7db *R/fixedobjective.R
+d6bdfa4c0109bfa0844868b45a7dd3f7 *R/fixedobjective.R
 08696edfa6adf3801d519c6a024809a0 *R/gene.R
 4aa0eb906168907c911aee34754d11bf *R/generate.combinations.R
 56a92c27dcd0cd617aa6f0b004639f94 *R/helpers.R
@@ -40,7 +40,7 @@ dca0bbbd90d24921e6bcd84328d604eb *R/plot.stuartOutput.R
 315868aa40c8e887e051797771175d7c *R/randomsamples.R
 439bec584e2f315dc8cf468456340ffe *R/run.Mplus.R
 e9bdf644cbbfeb327b254d81d7bbbbdc *R/run.lavaan.R
-c44540d229d5ed1d919b39fe6657326b *R/sanitycheck.R
+60cecbe8f21ce2ab8d54cd8657604bb0 *R/sanitycheck.R
 388205c48f938da4f310d20244201c34 *R/software.check.R
 32002da0c2ac4fc686c4487d1dc97a71 *R/stuart-internal.R
 de53aa0b530202f1c6d5e35448694100 *R/stuart.R

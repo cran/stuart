@@ -192,8 +192,7 @@ fixedobjective <- function(
       fixed <- manualobjective(fixed)
     }
     obj_list[[length(obj_list) + 1]] <- fixed
-    add <- union(add, eval(fixed$call$criteria))
-    add <- union(add, eval(fixed$call$add))
+    add <- union(add, eval(names(formals(fixed$func))))
   }
   
   
